@@ -3,217 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEE Main 2026 - Study Playlist Manager</title>
+    <title>JEE Main 2026 - Study OS</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        zinc: {
+                            850: '#1f2937',
+                            900: '#18181b', // Deeper Zinc
+                            950: '#09090b', // Ultra Dark
+                        },
+                        accent: {
+                            500: '#6366f1', // Indigo
+                            600: '#4f46e5',
+                            glow: 'rgba(99, 102, 241, 0.15)'
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(99, 102, 241, 0.15)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Custom Scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+        /* Glass & Utility */
+        .glass {
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(39, 39, 42, 0.6);
         }
-        ::-webkit-scrollbar-track {
-            background: #1f2937; 
+        
+        .panel-border { border: 1px solid #27272a; }
+
+        /* Drag & Drop */
+        .draggable-source { opacity: 0.5; transform: scale(0.98); border: 1px dashed #6366f1; background: #18181b; }
+        .draggable-over { border-top: 2px solid #6366f1; padding-top: 4px; transition: all 0.1s; }
+        
+        /* Custom Checkbox */
+        .custom-checkbox input:checked + div { background-color: #10b981; border-color: #10b981; }
+        .custom-checkbox input:checked + div svg { display: block; }
+
+        /* Animations */
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .animate-slide-in { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        /* Overlay to fix iframe drag issues */
+        .iframe-overlay { display: none; }
+        body.dragging .iframe-overlay { display: block; }
+
+        /* Cinema Mode Classes */
+        .cinema-mode-active #sidebar,
+        .cinema-mode-active #playlist-panel, 
+        .cinema-mode-active header {
+            filter: brightness(0.2) grayscale(0.8);
+            pointer-events: none;
+            transition: all 0.5s ease;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #374151; 
-            border-radius: 4px;
+        
+        /* Fix: Elevate Player above overlay in Cinema Mode */
+        .cinema-mode-active #player-column {
+            z-index: 50;
+            position: relative;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4b5563; 
-        }
-        .video-card.active {
-            background-color: #374151;
-            border-left: 4px solid #3b82f6;
+        
+        /* Theater Mode Transition */
+        #playlist-panel {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
         }
     </style>
 </head>
-<body class="bg-black text-gray-100 h-screen flex flex-col overflow-hidden font-sans">
+<body class="bg-zinc-950 text-zinc-200 h-screen flex flex-col overflow-hidden font-sans selection:bg-accent-500/30 selection:text-white">
+
+    <!-- Cinema Mode Overlay -->
+    <div id="cinema-overlay" class="fixed inset-0 bg-black/90 z-40 hidden opacity-0 transition-opacity duration-500 pointer-events-none"></div>
 
     <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 h-16 flex items-center justify-between px-6 flex-shrink-0">
-        <div class="flex items-center gap-3">
-            <i data-lucide="graduation-cap" class="text-blue-500 w-8 h-8"></i>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight">JEE Main 2026</h1>
-                <p class="text-xs text-gray-400">Study Playlist Manager</p>
+    <header class="glass h-14 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-50 transition-all duration-300">
+        <div class="flex items-center gap-4">
+            <!-- Mobile Menu Toggle -->
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-accent-500/10 rounded-lg flex items-center justify-center border border-accent-500/20 shadow-glow">
+                    <i data-lucide="zap" class="text-accent-500 w-4 h-4 fill-current"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-white leading-none">JEE<span class="text-accent-500">OS</span></h1>
+                    <p class="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Study Manager</p>
+                </div>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <!-- Export/Import Controls -->
-            <button onclick="exportData()" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors" title="Download Backup">
-                <i data-lucide="download" class="w-3 h-3"></i> Export
-            </button>
-            <label class="text-xs text-green-400 hover:text-green-300 cursor-pointer flex items-center gap-1 transition-colors" title="Restore Backup">
-                <i data-lucide="upload" class="w-3 h-3"></i> Import
-                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(this)">
-            </label>
-            
-            <div class="h-4 w-px bg-gray-700 mx-2"></div>
 
-            <button onclick="resetData()" class="text-xs text-red-400 hover:text-red-300 underline">Reset</button>
-            <div class="text-xs text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-700">
-                <span id="storage-status">Saved locally</span>
+        <div class="flex items-center gap-2">
+            <div class="hidden md:flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-0.5">
+                <button onclick="exportData()" class="px-3 py-1.5 text-[11px] font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors flex items-center gap-1.5">
+                    <i data-lucide="download" class="w-3 h-3"></i> Backup
+                </button>
+                <div class="w-px h-3 bg-zinc-800 mx-1"></div>
+                <label class="px-3 py-1.5 text-[11px] font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="upload" class="w-3 h-3"></i> Restore
+                    <input type="file" id="import-file" accept=".json" onchange="importData(this)" class="hidden">
+                </label>
             </div>
+
+            <button onclick="resetData()" class="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors ml-2" title="Reset All Data">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div class="flex flex-1 overflow-hidden">
+    <!-- Main Workspace -->
+    <div class="flex flex-1 overflow-hidden relative">
         
-        <!-- Sidebar: Folders -->
-        <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col flex-shrink-0 transition-all duration-300" id="sidebar">
-            <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800 sticky top-0 z-10">
-                <h2 class="font-semibold text-gray-300">My Subjects</h2>
-                <button onclick="openModal('folder')" class="p-1 hover:bg-gray-700 rounded text-blue-400" title="Add Folder">
-                    <i data-lucide="folder-plus" class="w-5 h-5"></i>
+        <!-- Sidebar: Subjects -->
+        <aside id="sidebar" class="absolute lg:static inset-y-0 left-0 w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col z-30 transform -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none">
+            <div class="p-3 border-b border-zinc-800 bg-zinc-900 sticky top-0 z-10 flex justify-between items-center">
+                <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-wider pl-2">My Folders</span>
+                <button onclick="openModal('folder')" class="p-1.5 bg-accent-600 hover:bg-accent-500 text-white rounded-md shadow-lg shadow-accent-500/20 transition-all hover:scale-105 active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
                 </button>
             </div>
             
             <div id="folder-list" class="flex-1 overflow-y-auto p-2 space-y-1">
                 <!-- Folders injected here -->
             </div>
+            
+            <div class="p-3 border-t border-zinc-800 bg-zinc-900/50">
+                <div class="flex items-center gap-2 justify-center text-[10px] text-zinc-600">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span id="storage-status">Synced</span>
+                </div>
+            </div>
         </aside>
 
-        <!-- Main Area -->
-        <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-            
-            <!-- Empty State -->
-            <div id="empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-500 z-0">
-                <i data-lucide="play-square" class="w-16 h-16 mb-4 opacity-50"></i>
-                <p class="text-lg">Select a folder and video to start studying</p>
-            </div>
+        <!-- Sidebar Overlay for Mobile -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden hidden opacity-0 transition-opacity duration-300"></div>
 
-            <!-- Video Player Section (Left/Top) -->
-            <div class="flex-1 bg-black flex flex-col relative z-10" id="player-container">
-                <div class="flex-1 relative bg-black flex items-center justify-center">
-                    <div id="iframe-wrapper" class="w-full h-full">
-                        <!-- Iframe injected here -->
-                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-600 bg-gray-950">
-                            <i data-lucide="monitor-play" class="w-12 h-12 mb-3"></i>
-                            <p>No video selected</p>
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative bg-black">
+            
+            <!-- Video Player (Left/Center) -->
+            <div id="player-column" class="flex-1 flex flex-col relative z-20 min-w-0 transition-all duration-300">
+                <!-- Player Wrapper -->
+                <div class="flex-1 relative bg-black flex items-center justify-center overflow-hidden group">
+                    <div id="iframe-wrapper" class="w-full h-full relative z-50">
+                        <!-- Iframe or Empty State injected here -->
+                    </div>
+                    <!-- Transparent overlay to capture drag events over iframe -->
+                    <div class="iframe-overlay absolute inset-0 z-[60] bg-transparent"></div>
+                </div>
+                
+                <!-- Player Info Bar -->
+                <div class="h-14 bg-zinc-900/80 backdrop-blur border-t border-zinc-800 px-5 flex items-center justify-between flex-shrink-0 relative z-50">
+                    <div class="flex items-center gap-4 overflow-hidden">
+                        <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0 border border-zinc-700/50">
+                            <i data-lucide="play" class="w-3.5 h-3.5 text-accent-500 fill-current"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 id="current-video-title" class="text-sm font-medium text-zinc-200 truncate">No video playing</h3>
+                            <p class="text-[11px] text-zinc-500">Select a lecture to focus</p>
                         </div>
                     </div>
-                </div>
-                <div class="h-16 bg-gray-800 border-t border-gray-700 px-6 flex items-center justify-between" id="player-controls">
-                    <div>
-                        <h3 id="current-video-title" class="text-sm font-medium text-white truncate max-w-md">Select a video...</h3>
+
+                    <!-- Player Controls -->
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="toggleCinemaMode()" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors group" title="Cinema Mode (C)">
+                            <i data-lucide="moon" class="w-4 h-4 group-hover:fill-current"></i>
+                        </button>
+                        <button onclick="toggleTheaterMode()" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" title="Theater Mode (T)">
+                            <i data-lucide="rectangle-horizontal" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="toggleFullscreen()" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" title="Fullscreen (F)">
+                            <i data-lucide="maximize" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <!-- Future controls could go here -->
                 </div>
             </div>
 
-            <!-- Playlist/Video List Section (Right/Bottom) -->
-            <div class="w-full md:w-96 bg-gray-900 border-l border-gray-700 flex flex-col flex-shrink-0 z-10">
-                <div class="p-4 border-b border-gray-700 bg-gray-900 flex justify-between items-center sticky top-0">
-                    <div>
-                        <h2 id="active-folder-name" class="font-bold text-lg text-white">Folder Name</h2>
-                        <p id="video-count" class="text-xs text-gray-400">0 videos</p>
-                    </div>
-                    <div class="flex gap-1">
-                        <button onclick="editCurrentFolder()" class="p-2 hover:bg-gray-800 rounded text-gray-400" title="Rename Folder">
-                            <i data-lucide="edit-2" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteCurrentFolder()" class="p-2 hover:bg-gray-800 rounded text-red-400" title="Delete Folder">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="p-3 border-b border-gray-700 bg-gray-800/50">
-                    <button onclick="openModal('video')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Add YouTube Link
+            <!-- Playlist Panel (Right) -->
+            <div id="playlist-panel" class="w-full md:w-96 bg-zinc-900 border-l border-zinc-800 flex flex-col flex-shrink-0 z-20 shadow-2xl relative transition-all duration-300">
+                
+                <!-- Panel Header / Tabs -->
+                <div class="h-12 border-b border-zinc-800 flex text-sm font-medium bg-zinc-900">
+                    <button onclick="switchTab('playlist')" id="tab-playlist" class="flex-1 flex items-center justify-center gap-2 border-b-2 border-accent-500 text-white bg-zinc-800/50 transition-colors">
+                        <i data-lucide="list" class="w-4 h-4"></i> Playlist
+                    </button>
+                    <button onclick="switchTab('notes')" id="tab-notes" class="flex-1 flex items-center justify-center gap-2 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30 transition-colors">
+                        <i data-lucide="notebook-pen" class="w-4 h-4"></i> Notes
                     </button>
                 </div>
 
-                <div id="video-list" class="flex-1 overflow-y-auto p-2 space-y-2 pb-20">
-                    <!-- Videos injected here -->
+                <!-- Playlist View -->
+                <div id="view-playlist" class="flex-1 flex flex-col overflow-hidden h-full">
+                    <!-- Controls -->
+                    <div class="p-3 border-b border-zinc-800 flex flex-col gap-3 bg-zinc-900 z-20">
+                        <div class="flex justify-between items-center">
+                            <div class="flex flex-col">
+                                <h2 id="active-folder-name" class="font-bold text-zinc-100 truncate text-sm max-w-[180px]">Select Subject</h2>
+                                <span id="video-count" class="text-[10px] text-zinc-500 font-mono">0 videos</span>
+                            </div>
+                            <div class="flex items-center gap-1 bg-zinc-800/50 p-1 rounded-lg border border-zinc-800">
+                                <button onclick="toggleFavoritesFilter()" id="fav-filter-btn" class="p-1.5 hover:bg-zinc-700 rounded-md text-zinc-400 transition-colors" title="Filter Favorites">
+                                    <i data-lucide="star" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <div class="w-px h-3 bg-zinc-700 mx-1"></div>
+                                <button onclick="editCurrentFolder()" class="p-1.5 hover:bg-zinc-700 rounded-md text-zinc-400 transition-colors"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="deleteCurrentFolder()" class="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-md text-zinc-400 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Search -->
+                        <div class="relative group">
+                            <i data-lucide="search" class="absolute left-3 top-2.5 text-zinc-500 w-3.5 h-3.5 group-focus-within:text-accent-500 transition-colors"></i>
+                            <input type="text" id="video-search" oninput="handleSearch(this.value)" placeholder="Search lectures..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-accent-500/50 focus:ring-1 focus:ring-accent-500/50 transition-all placeholder-zinc-600">
+                        </div>
+                    </div>
+
+                    <!-- Add Video Button -->
+                    <div class="p-2 bg-zinc-900/50">
+                        <button onclick="openModal('video')" class="w-full bg-zinc-800 hover:bg-zinc-750 border border-zinc-700/50 hover:border-accent-500/30 text-zinc-300 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-all group shadow-sm hover:shadow-glow">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-accent-500 group-hover:text-accent-400"></i> Add Video
+                        </button>
+                    </div>
+
+                    <!-- Video List -->
+                    <div id="video-list" class="flex-1 overflow-y-auto p-2 space-y-2 pb-20 custom-scrollbar">
+                        <!-- Videos injected here -->
+                    </div>
                 </div>
+
+                <!-- Notes View -->
+                <div id="view-notes" class="hidden flex-1 flex-col overflow-hidden bg-zinc-900 h-full relative">
+                    <div class="absolute inset-0 p-4 flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                             <div class="flex items-center gap-2">
+                                <div class="p-1 bg-accent-500/10 rounded">
+                                    <i data-lucide="highlighter" class="w-3.5 h-3.5 text-accent-500"></i>
+                                </div>
+                                <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wide">Lecture Notes</h3>
+                             </div>
+                             <span id="notes-status" class="text-[10px] text-zinc-600 font-mono transition-colors">Auto-saved</span>
+                        </div>
+                        <textarea id="video-notes-area" class="flex-1 w-full bg-zinc-950/50 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-300 focus:outline-none focus:border-accent-500/50 focus:ring-1 focus:ring-accent-500/50 resize-none font-mono leading-relaxed placeholder-zinc-700 transition-all" placeholder="Select a video to start taking notes...&#10;- Key Formula: F = ma&#10;- Important timestamp: 12:30"></textarea>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[70] flex flex-col gap-2 pointer-events-none"></div>
+
     <!-- Modals -->
-    <!-- Add Folder Modal -->
-    <div id="modal-folder" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl w-96 p-6">
-            <h3 class="text-lg font-bold mb-4">Create New Subject Folder</h3>
-            <input type="text" id="input-folder-name" placeholder="e.g., Physics - Ray Optics" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white mb-4 focus:outline-none focus:border-blue-500">
-            <div class="flex justify-end gap-3">
-                <button onclick="closeModals()" class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
-                <button onclick="createFolder()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium">Create</button>
+    <div id="modal-backdrop" class="hidden fixed inset-0 bg-black/80 backdrop-blur-[2px] z-[60] opacity-0 transition-opacity duration-200" onclick="if(event.target === this) closeModals()">
+        
+        <!-- Folder Modal -->
+        <div id="modal-folder" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl w-96 p-6 transform scale-95 opacity-0 transition-all duration-200">
+            <h3 class="text-base font-bold text-white mb-1">New Subject Folder</h3>
+            <p class="text-xs text-zinc-500 mb-5">Organize your lectures by topic.</p>
+            <input type="text" id="input-folder-name" placeholder="e.g., Physics - Rotational Motion" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white mb-6 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all placeholder-zinc-700">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModals()" class="px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                <button onclick="createFolder()" class="px-4 py-2 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-xs font-medium shadow-glow transition-all">Create Folder</button>
             </div>
         </div>
-    </div>
 
-    <!-- Add Video Modal -->
-    <div id="modal-video" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl w-full max-w-md p-6">
-            <h3 class="text-lg font-bold mb-4">Add Video to Playlist</h3>
+        <!-- Video Modal -->
+        <div id="modal-video" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-200">
+            <h3 class="text-base font-bold text-white mb-1">Add Video</h3>
+            <p class="text-xs text-zinc-500 mb-5">Import content from YouTube.</p>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">YouTube URL</label>
-                    <input type="text" id="input-video-url" placeholder="https://youtube.com/watch?v=..." class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-[10px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">YouTube URL</label>
+                    <div class="relative">
+                        <i data-lucide="link" class="absolute left-3 top-2.5 text-zinc-600 w-3.5 h-3.5"></i>
+                        <input type="text" id="input-video-url" placeholder="https://youtu.be/..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 p-2.5 text-sm text-white focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all placeholder-zinc-700">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Title (Optional)</label>
-                    <input type="text" id="input-video-title" placeholder="e.g., Lecture 1: Reflection" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500">
-                    <p class="text-xs text-gray-500 mt-1">Leave blank to use generic title.</p>
+                    <label class="block text-[10px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">Title (Optional)</label>
+                    <input type="text" id="input-video-title" placeholder="e.g., Lecture 1: Basics" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all placeholder-zinc-700">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">Category</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="selectTag('Lecture')" class="tag-btn bg-accent-500/10 text-accent-400 border border-accent-500/30 p-2 rounded-lg text-xs font-medium transition-all text-center" data-value="Lecture">Lecture</button>
+                        <button type="button" onclick="selectTag('PYQ')" class="tag-btn bg-zinc-800 text-zinc-400 border border-zinc-700 p-2 rounded-lg text-xs font-medium hover:bg-zinc-700 transition-all text-center" data-value="PYQ">PYQ</button>
+                        <button type="button" onclick="selectTag('Concept')" class="tag-btn bg-zinc-800 text-zinc-400 border border-zinc-700 p-2 rounded-lg text-xs font-medium hover:bg-zinc-700 transition-all text-center" data-value="Concept">Concept</button>
+                        <button type="button" onclick="selectTag('Revision')" class="tag-btn bg-zinc-800 text-zinc-400 border border-zinc-700 p-2 rounded-lg text-xs font-medium hover:bg-zinc-700 transition-all text-center" data-value="Revision">Revision</button>
+                    </div>
+                    <input type="hidden" id="input-video-tag" value="Lecture">
                 </div>
             </div>
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
-                <button onclick="addVideo()" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded font-medium">Add Video</button>
+            <div class="flex justify-end gap-2 mt-8">
+                <button onclick="closeModals()" class="px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                <button onclick="addVideo()" class="px-4 py-2 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-xs font-medium shadow-glow transition-all">Add to Playlist</button>
             </div>
         </div>
-    </div>
 
-    <!-- Rename Modal -->
-    <div id="modal-rename" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl w-96 p-6">
-            <h3 class="text-lg font-bold mb-4">Rename Item</h3>
+        <!-- Rename Modal -->
+        <div id="modal-rename" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 rounded-xl border border-zinc-800 shadow-2xl w-96 p-6 transform scale-95 opacity-0 transition-all duration-200">
+            <h3 class="text-base font-bold text-white mb-1">Rename</h3>
+            <p class="text-xs text-zinc-500 mb-5">Update the name of your item.</p>
             <input type="hidden" id="rename-type">
             <input type="hidden" id="rename-id">
-            <input type="text" id="input-rename-value" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white mb-4 focus:outline-none focus:border-blue-500">
-            <div class="flex justify-end gap-3">
-                <button onclick="closeModals()" class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
-                <button onclick="saveRename()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium">Save</button>
+            <input type="text" id="input-rename-value" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-sm text-white mb-6 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModals()" class="px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                <button onclick="saveRename()" class="px-4 py-2 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-xs font-medium shadow-glow transition-all">Save Changes</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- State Management ---
-        let appData = {
-            folders: [],
-            activeFolderId: null,
-            activeVideoId: null
-        };
-
-        const STORAGE_KEY = 'jee_prep_playlist_v1';
+        // --- State ---
+        let appData = { folders: [], activeFolderId: null, activeVideoId: null };
+        const STORAGE_KEY = 'jee_prep_manager_ultra_v1'; 
+        const OLD_STORAGE_KEY_V2 = 'jee_prep_manager_v2';
+        const OLD_STORAGE_KEY_V1 = 'jee_prep_playlist_v1';
+        
+        let activeTab = 'playlist';
+        let searchQuery = '';
+        let showFavoritesOnly = false;
+        let isDragging = false;
+        let isTheaterMode = false;
+        let isCinemaMode = false;
 
         // --- Init ---
         function init() {
-            const saved = localStorage.getItem(STORAGE_KEY);
+            // Migration Ladder: Check new -> check v2 -> check v1
+            let saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) {
+                const v2 = localStorage.getItem(OLD_STORAGE_KEY_V2);
+                if (v2) { saved = v2; localStorage.setItem(STORAGE_KEY, saved); }
+                else {
+                    const v1 = localStorage.getItem(OLD_STORAGE_KEY_V1);
+                    if (v1) { saved = v1; localStorage.setItem(STORAGE_KEY, saved); }
+                }
+            }
+
             if (saved) {
-                appData = JSON.parse(saved);
+                try {
+                    appData = JSON.parse(saved);
+                    // Integrity Check
+                    if(!appData.folders) appData = { folders: [], activeFolderId: null, activeVideoId: null };
+                } catch (e) { seedDefaults(); }
             } else {
-                // Seed Default Data
                 seedDefaults();
             }
+            
             lucide.createIcons();
             render();
+            setupNotesListener();
+            setupKeyboardShortcuts();
         }
 
         function seedDefaults() {
             const id1 = generateId();
-            const id2 = generateId();
             appData = {
-                folders: [
-                    { id: id1, name: 'Physics - Mechanics', videos: [] },
-                    { id: id2, name: 'Maths - Algebra', videos: [] }
-                ],
+                folders: [{ id: id1, name: 'Physics - Mechanics', videos: [] }],
                 activeFolderId: id1,
                 activeVideoId: null
             };
@@ -222,83 +398,134 @@
 
         function save() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-            document.getElementById('storage-status').innerText = 'Saved';
-            setTimeout(() => document.getElementById('storage-status').innerText = 'Saved locally', 1000);
-        }
-
-        // --- Import / Export ---
-
-        function exportData() {
-            const dataStr = JSON.stringify(appData, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            const date = new Date().toISOString().slice(0, 10);
-            a.download = `jee-study-backup-${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function importData(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    // Basic validation
-                    if (imported.folders && Array.isArray(imported.folders)) {
-                        if(confirm("This will overwrite your current study playlist. Are you sure you want to continue?")) {
-                            appData = imported;
-                            // Reset active items if they don't exist in new data to prevent crashes
-                            if (!appData.folders.find(f => f.id === appData.activeFolderId)) {
-                                appData.activeFolderId = appData.folders.length > 0 ? appData.folders[0].id : null;
-                                appData.activeVideoId = null;
-                            }
-                            save();
-                            render();
-                            alert("Data imported successfully!");
-                        }
-                    } else {
-                        alert("Invalid file format. Please upload a valid JSON backup.");
-                    }
-                } catch (err) {
-                    alert("Error parsing file: " + err.message);
-                }
-                input.value = ''; // Reset input to allow same file selection again
-            };
-            reader.readAsText(file);
-        }
-
-        function resetData() {
-            if(confirm("Are you sure you want to delete all folders and videos? This cannot be undone.")) {
-                localStorage.removeItem(STORAGE_KEY);
-                location.reload();
+            const status = document.getElementById('storage-status');
+            if(status) {
+                status.innerText = 'Saving...';
+                status.classList.add('text-accent-500');
+                setTimeout(() => {
+                    status.innerText = 'Synced';
+                    status.classList.remove('text-accent-500');
+                }, 800);
             }
         }
 
-        // --- Helpers ---
-        function generateId() {
-            return Math.random().toString(36).substr(2, 9);
+        // --- View Modes ---
+        function toggleTheaterMode() {
+            isTheaterMode = !isTheaterMode;
+            const panel = document.getElementById('playlist-panel');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (isTheaterMode) {
+                // Hide Playlist
+                panel.classList.add('w-0', 'overflow-hidden', 'opacity-0');
+                panel.classList.remove('w-full', 'md:w-96');
+                
+                // Hide Sidebar (Force translate-x-full even on large screens)
+                sidebar.classList.remove('lg:translate-x-0');
+                sidebar.classList.add('-translate-x-full');
+                
+                showToast('Theater Mode On');
+            } else {
+                // Show Playlist
+                panel.classList.remove('w-0', 'overflow-hidden', 'opacity-0');
+                panel.classList.add('w-full', 'md:w-96');
+                
+                // Show Sidebar
+                sidebar.classList.add('lg:translate-x-0');
+                sidebar.classList.remove('-translate-x-full');
+                
+                showToast('Theater Mode Off');
+            }
         }
 
-        function getYouTubeId(url) {
-            if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+        function toggleCinemaMode() {
+            isCinemaMode = !isCinemaMode;
+            const overlay = document.getElementById('cinema-overlay');
+            const body = document.body;
+
+            if (isCinemaMode) {
+                overlay.classList.remove('hidden', 'opacity-0');
+                body.classList.add('cinema-mode-active');
+                showToast('Cinema Mode On');
+            } else {
+                overlay.classList.add('hidden', 'opacity-0');
+                body.classList.remove('cinema-mode-active');
+                showToast('Cinema Mode Off');
+            }
         }
 
-        function getThumbnail(videoId) {
-            return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        function toggleFullscreen() {
+            const iframe = document.querySelector('iframe');
+            if (!iframe) {
+                showToast("No video playing", "error");
+                return;
+            }
+            
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) { /* Safari */
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) { /* IE11 */
+                iframe.msRequestFullscreen();
+            }
         }
 
-        // --- Rendering ---
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Ignore if typing in input/textarea
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+                const key = e.key.toLowerCase();
+                if (key === 't') toggleTheaterMode();
+                if (key === 'c') toggleCinemaMode();
+                if (key === 'f') toggleFullscreen();
+            });
+            
+            // Allow clicking overlay to exit cinema mode
+            document.getElementById('cinema-overlay').addEventListener('click', toggleCinemaMode);
+        }
+
+        // --- Mobile Logic ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // --- Tabs ---
+        function switchTab(tab) {
+            activeTab = tab;
+            const pBtn = document.getElementById('tab-playlist');
+            const nBtn = document.getElementById('tab-notes');
+            const pView = document.getElementById('view-playlist');
+            const nView = document.getElementById('view-notes');
+
+            if (tab === 'playlist') {
+                pBtn.className = "flex-1 flex items-center justify-center gap-2 border-b-2 border-accent-500 text-white bg-zinc-800/50 transition-colors py-2";
+                nBtn.className = "flex-1 flex items-center justify-center gap-2 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30 transition-colors py-2";
+                pView.classList.remove('hidden');
+                nView.classList.add('hidden');
+            } else {
+                nBtn.className = "flex-1 flex items-center justify-center gap-2 border-b-2 border-accent-500 text-white bg-zinc-800/50 transition-colors py-2";
+                pBtn.className = "flex-1 flex items-center justify-center gap-2 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30 transition-colors py-2";
+                pView.classList.add('hidden');
+                nView.classList.remove('hidden');
+                nView.classList.add('flex');
+                loadNotesForActiveVideo();
+            }
+        }
+
+        // --- Render ---
         function render() {
             renderFolders();
             renderMainArea();
@@ -309,280 +536,553 @@
             const list = document.getElementById('folder-list');
             list.innerHTML = '';
 
-            appData.folders.forEach(folder => {
+            appData.folders.forEach((folder, index) => {
                 const isActive = folder.id === appData.activeFolderId;
+                const total = folder.videos.length;
+                const watched = folder.videos.filter(v => v.watched).length;
+                const percent = total === 0 ? 0 : Math.round((watched / total) * 100);
+
                 const el = document.createElement('div');
-                el.className = `cursor-pointer flex items-center justify-between p-3 rounded-lg text-sm transition-colors ${isActive ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'text-gray-400 hover:bg-gray-700/50 hover:text-gray-200'}`;
-                el.onclick = () => setActiveFolder(folder.id);
+                el.className = `group relative flex flex-col p-3 rounded-xl transition-all duration-200 cursor-pointer mb-1 border
+                    ${isActive 
+                        ? 'bg-zinc-800 border-zinc-700 shadow-card' 
+                        : 'bg-transparent border-transparent hover:bg-zinc-800/50 hover:border-zinc-800 text-zinc-400'
+                    }`;
+                
+                // Disable drag if filtering is likely (keep simple for folders)
+                el.setAttribute('draggable', 'true');
+                el.dataset.type = 'folder';
+                el.dataset.index = index;
+                el.dataset.id = folder.id;
+
                 el.innerHTML = `
-                    <div class="flex items-center gap-3 overflow-hidden">
-                        <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-4 h-4 flex-shrink-0"></i>
-                        <span class="truncate font-medium">${escapeHtml(folder.name)}</span>
+                    <div class="flex items-center gap-3 overflow-hidden w-full mb-1.5" onclick="setActiveFolder('${folder.id}')">
+                        <i data-lucide="grip-vertical" class="w-4 h-4 text-zinc-600 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        <div class="${isActive ? 'text-accent-500' : 'text-zinc-600 group-hover:text-zinc-500'} transition-colors">
+                            <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-4 h-4"></i>
+                        </div>
+                        <span class="truncate font-medium flex-1 text-sm ${isActive ? 'text-white' : ''}">${escapeHtml(folder.name)}</span>
+                        ${total > 0 ? `<span class="text-[10px] font-mono text-zinc-600">${watched}/${total}</span>` : ''}
                     </div>
-                    <span class="text-xs opacity-50 bg-gray-900 px-2 py-0.5 rounded-full">${folder.videos.length}</span>
+                    <div class="h-1 w-full bg-zinc-800 rounded-full overflow-hidden ml-7 w-[calc(100%-1.75rem)] opacity-60">
+                        <div class="h-full bg-accent-500 transition-all duration-500 ease-out" style="width: ${percent}%"></div>
+                    </div>
                 `;
+                
+                attachDragEvents(el);
                 list.appendChild(el);
             });
         }
 
         function renderMainArea() {
             const activeFolder = appData.folders.find(f => f.id === appData.activeFolderId);
+            const videoList = document.getElementById('video-list');
+            videoList.innerHTML = '';
             
+            // Empty State
             if (!activeFolder) {
-                // Show empty state if no folder selected (shouldn't happen often)
+                document.getElementById('active-folder-name').innerText = "Select Subject";
+                document.getElementById('video-count').innerText = "0 videos";
+                document.getElementById('iframe-wrapper').innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-zinc-700 h-full">
+                        <i data-lucide="layout-grid" class="w-16 h-16 mb-4 opacity-20"></i>
+                        <p class="text-sm">Select or create a folder</p>
+                    </div>`;
                 return;
             }
 
-            // Update Header Info
+            // Stats
             document.getElementById('active-folder-name').innerText = activeFolder.name;
             document.getElementById('video-count').innerText = `${activeFolder.videos.length} videos`;
 
-            // Render Video List
-            const videoList = document.getElementById('video-list');
-            videoList.innerHTML = '';
-
-            if (activeFolder.videos.length === 0) {
-                videoList.innerHTML = `
-                    <div class="text-center p-8 text-gray-500">
-                        <p class="mb-2">This folder is empty.</p>
-                        <p class="text-xs">Click "Add YouTube Link" to start building your playlist.</p>
-                    </div>
-                `;
+            // Filter Favorites Button
+            const favBtn = document.getElementById('fav-filter-btn');
+            if (showFavoritesOnly) {
+                favBtn.classList.add('text-yellow-400', 'bg-yellow-400/10', 'border-yellow-400/20');
+                favBtn.classList.remove('text-zinc-400', 'hover:bg-zinc-700');
             } else {
-                activeFolder.videos.forEach((video, index) => {
+                favBtn.classList.remove('text-yellow-400', 'bg-yellow-400/10', 'border-yellow-400/20');
+                favBtn.classList.add('text-zinc-400', 'hover:bg-zinc-700');
+            }
+
+            // --- Filter Logic ---
+            let videosToRender = activeFolder.videos.map((v, i) => ({...v, originalIndex: i})); // Keep track of index
+            
+            if (searchQuery) {
+                const lowerQ = searchQuery.toLowerCase();
+                videosToRender = videosToRender.filter(v => v.title.toLowerCase().includes(lowerQ));
+            }
+            if (showFavoritesOnly) {
+                videosToRender = videosToRender.filter(v => v.favorite);
+            }
+
+            // Render List
+            if (videosToRender.length === 0) {
+                const msg = searchQuery ? "No matches found" : (showFavoritesOnly ? "No favorites marked" : "Folder is empty");
+                videoList.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16 text-zinc-600 border-2 border-dashed border-zinc-800/50 rounded-xl bg-zinc-900/30">
+                        <i data-lucide="ghost" class="w-8 h-8 mb-2 opacity-40"></i>
+                        <p class="text-xs font-medium">${msg}</p>
+                    </div>`;
+            } else {
+                videosToRender.forEach((video) => {
                     const isActiveVideo = video.id === appData.activeVideoId;
+                    
+                    // Tags
+                    let tagClass = "bg-zinc-800 text-zinc-400 border-zinc-700";
+                    if (video.tag === 'Lecture') tagClass = "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+                    else if (video.tag === 'PYQ') tagClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    else if (video.tag === 'Concept') tagClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    else if (video.tag === 'Revision') tagClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+
                     const el = document.createElement('div');
-                    el.className = `video-card group relative flex gap-3 p-3 rounded-lg cursor-pointer transition-all ${isActiveVideo ? 'active bg-gray-800' : 'bg-gray-800/30 hover:bg-gray-800'}`;
+                    el.className = `group relative flex gap-3 p-3 rounded-xl cursor-pointer border transition-all duration-200 
+                        ${isActiveVideo 
+                            ? 'bg-zinc-800 border-zinc-700 shadow-card' 
+                            : 'bg-zinc-900/40 border-transparent hover:bg-zinc-800 hover:border-zinc-700/80'}`;
+                    
                     el.onclick = (e) => {
-                        // Prevent click if clicking actions
-                        if (e.target.closest('.actions')) return;
+                        // Prevent click if clicking actions, handles, or the checkbox itself
+                        if (e.target.closest('.actions') || e.target.closest('.drag-handle') || e.target.closest('input') || e.target.closest('button') || e.target.closest('.custom-checkbox')) return;
                         playVideo(video.id);
                     };
 
+                    // DRAG LOGIC: Only enable if NOT filtering
+                    const canDrag = !searchQuery && !showFavoritesOnly;
+                    if (canDrag) {
+                        el.setAttribute('draggable', 'true');
+                        el.dataset.type = 'video';
+                        el.dataset.index = video.originalIndex; 
+                        el.dataset.id = video.id;
+                        attachDragEvents(el);
+                    }
+
                     el.innerHTML = `
-                        <div class="relative w-24 h-16 bg-gray-900 rounded overflow-hidden flex-shrink-0">
-                            <img src="${video.thumbnail}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
-                            ${isActiveVideo ? '<div class="absolute inset-0 flex items-center justify-center bg-black/50"><i data-lucide="bar-chart-2" class="text-blue-400 w-6 h-6 animate-pulse"></i></div>' : ''}
+                        <!-- Drag Handle -->
+                        ${canDrag ? `
+                        <div class="drag-handle absolute left-1 top-1/2 -translate-y-1/2 p-1 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                            <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-zinc-600 hover:text-zinc-400"></i>
+                        </div>` : ''}
+
+                        <!-- Checkbox -->
+                        <div class="absolute top-2.5 left-2.5 z-20 custom-checkbox">
+                            <label class="cursor-pointer group/check">
+                                <input type="checkbox" class="hidden" ${video.watched ? 'checked' : ''} onchange="toggleWatched('${video.id}')">
+                                <div class="w-4 h-4 rounded border-2 border-zinc-600 bg-black/60 group-hover/check:border-zinc-400 transition-colors flex items-center justify-center">
+                                    <svg class="w-2.5 h-2.5 text-black hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            </label>
                         </div>
-                        <div class="flex-1 min-w-0 flex flex-col justify-center">
-                            <h4 class="text-sm font-medium text-gray-200 truncate pr-6 leading-tight mb-1">${escapeHtml(video.title)}</h4>
-                            <p class="text-xs text-gray-500 font-mono">Video #${index + 1}</p>
+
+                        <!-- Thumbnail -->
+                        <div class="relative w-28 aspect-video bg-zinc-950 rounded-lg overflow-hidden flex-shrink-0 shadow-lg group-hover:ring-1 group-hover:ring-zinc-600 transition-all">
+                            <img src="${video.thumbnail}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100 ${video.watched ? 'grayscale opacity-40' : ''}">
+                            ${isActiveVideo ? `
+                                <div class="absolute inset-0 bg-accent-900/20 backdrop-blur-[1px] flex items-center justify-center border-2 border-accent-500 rounded-lg">
+                                    <div class="w-2 h-2 bg-accent-400 rounded-full animate-ping"></div>
+                                </div>
+                            ` : ''}
                         </div>
-                        <div class="actions absolute right-2 top-2 bottom-2 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="renameVideo('${video.id}')" class="p-1 hover:text-blue-400 text-gray-500"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                            <button onclick="deleteVideo('${video.id}')" class="p-1 hover:text-red-400 text-gray-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0 flex flex-col justify-center py-0.5 relative">
+                            <button onclick="toggleFavorite('${video.id}')" class="fav-btn absolute -top-1 right-0 p-1.5 hover:scale-110 transition-transform ${video.favorite ? 'text-yellow-400' : 'text-zinc-700 hover:text-zinc-400'}">
+                                <i data-lucide="star" class="w-3.5 h-3.5 ${video.favorite ? 'fill-current' : ''}"></i>
+                            </button>
+
+                            <h4 class="text-xs font-medium text-zinc-200 truncate leading-snug mb-1.5 pr-6 ${isActiveVideo ? 'text-accent-300' : ''} ${video.watched ? 'text-zinc-500 line-through' : ''}">${escapeHtml(video.title)}</h4>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded border ${tagClass}">${video.tag || 'Lecture'}</span>
+                                ${video.notes ? '<i data-lucide="notebook-pen" class="w-3 h-3 text-zinc-500"></i>' : ''}
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="actions flex flex-col justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pl-2 border-l border-zinc-800/50">
+                            <button onclick="renameVideo('${video.id}')" class="p-1 hover:bg-zinc-700 rounded text-zinc-500 hover:text-white transition-colors">
+                                <i data-lucide="edit-2" class="w-3 h-3"></i>
+                            </button>
+                            <button onclick="deleteVideo('${video.id}')" class="p-1 hover:bg-zinc-700 rounded text-zinc-500 hover:text-red-400 transition-colors">
+                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                            </button>
                         </div>
                     `;
                     videoList.appendChild(el);
                 });
             }
 
-            // Render Player Content
-            const playerContainer = document.getElementById('iframe-wrapper');
-            const titleDisplay = document.getElementById('current-video-title');
+            // Player Logic
+            renderPlayer(activeFolder);
+        }
+
+        function renderPlayer(folder) {
+            const container = document.getElementById('iframe-wrapper');
+            const titleEl = document.getElementById('current-video-title');
             
-            if (appData.activeVideoId) {
-                const activeVideo = activeFolder.videos.find(v => v.id === appData.activeVideoId);
-                if (activeVideo) {
-                    playerContainer.innerHTML = `
-                        <iframe 
-                            src="https://www.youtube.com/embed/${activeVideo.videoId}?autoplay=1&rel=0&modestbranding=1" 
-                            class="w-full h-full" 
+            if (appData.activeVideoId && folder.videos.length > 0) {
+                const video = folder.videos.find(v => v.id === appData.activeVideoId);
+                if (video) {
+                    // AUTOPLAY DISABLED (autoplay=0)
+                    container.innerHTML = `
+                        <iframe src="https://www.youtube.com/embed/${video.videoId}?autoplay=0&rel=0&modestbranding=1" 
+                            class="w-full h-full shadow-2xl" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                             allowfullscreen>
-                        </iframe>
-                    `;
-                    titleDisplay.innerText = activeVideo.title;
-                } else {
-                    // Active video might have been deleted
-                    appData.activeVideoId = null;
-                    renderMainArea(); 
+                        </iframe>`;
+                    titleEl.innerText = video.title;
+                    if(activeTab === 'notes') loadNotesForActiveVideo();
+                    return;
                 }
-            } else {
-                playerContainer.innerHTML = `
-                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-600 bg-gray-950">
-                        <i data-lucide="monitor-play" class="w-16 h-16 mb-4 opacity-20"></i>
-                        <p class="text-gray-500">Select a video from the list to play</p>
-                    </div>
-                `;
-                titleDisplay.innerText = "No video playing";
             }
+            // Empty Player
+            appData.activeVideoId = null;
+            container.innerHTML = `
+                <div class="w-full h-full flex flex-col items-center justify-center bg-black relative">
+                    <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#3f3f46 1px, transparent 1px); background-size: 24px 24px;"></div>
+                    <div class="relative z-10 text-center p-8">
+                        <div class="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl border border-zinc-800 rotate-3 transform transition-transform hover:rotate-6">
+                            <i data-lucide="play" class="w-6 h-6 text-zinc-600 ml-1"></i>
+                        </div>
+                        <h2 class="text-sm font-semibold text-zinc-400 mb-1">Study Mode</h2>
+                        <p class="text-zinc-600 text-[11px]">Select a video to begin</p>
+                    </div>
+                </div>`;
+            titleEl.innerText = "No video playing";
+            if(activeTab === 'notes') loadNotesForActiveVideo();
         }
 
-        // --- Actions ---
+        // --- Drag & Drop ---
+        let draggedItem = null;
+        function attachDragEvents(el) {
+            el.addEventListener('dragstart', handleDragStart);
+            el.addEventListener('dragenter', handleDragEnter);
+            el.addEventListener('dragover', handleDragOver);
+            el.addEventListener('dragleave', handleDragLeave);
+            el.addEventListener('drop', handleDrop);
+            el.addEventListener('dragend', handleDragEnd);
+        }
+        function handleDragStart(e) {
+            draggedItem = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.index);
+            this.classList.add('draggable-source');
+            document.body.classList.add('dragging'); // Enable iframe overlay
+        }
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault();
+            if (draggedItem && draggedItem.dataset.type === this.dataset.type) {
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('draggable-over');
+            }
+            return false;
+        }
+        function handleDragEnter(e) { if (draggedItem && draggedItem.dataset.type === this.dataset.type) this.classList.add('draggable-over'); }
+        function handleDragLeave(e) { this.classList.remove('draggable-over'); }
+        function handleDrop(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            this.classList.remove('draggable-over');
+            
+            // Critical check to prevent corrupting data if filters changed mid-drag (unlikely but safe)
+            if (searchQuery || showFavoritesOnly) return false;
 
+            if (draggedItem === this) return false;
+            if (draggedItem.dataset.type !== this.dataset.type) return false;
+
+            const fromIdx = parseInt(draggedItem.dataset.index);
+            const toIdx = parseInt(this.dataset.index);
+            const type = this.dataset.type;
+
+            if (type === 'folder') {
+                const item = appData.folders[fromIdx];
+                appData.folders.splice(fromIdx, 1);
+                appData.folders.splice(toIdx, 0, item);
+            } else if (type === 'video') {
+                const folder = appData.folders.find(f => f.id === appData.activeFolderId);
+                const item = folder.videos[fromIdx];
+                folder.videos.splice(fromIdx, 1);
+                folder.videos.splice(toIdx, 0, item);
+            }
+            save();
+            render();
+            return false;
+        }
+        function handleDragEnd(e) {
+            this.classList.remove('draggable-source');
+            document.querySelectorAll('.draggable-over').forEach(el => el.classList.remove('draggable-over'));
+            document.body.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        // --- Logic ---
         function setActiveFolder(id) {
             appData.activeFolderId = id;
-            appData.activeVideoId = null; // Reset video on folder change
+            appData.activeVideoId = null;
+            searchQuery = ''; 
+            document.getElementById('video-search').value = '';
+            // Switch back to playlist if notes was open, often nice UX
+            if (activeTab === 'notes') switchTab('playlist');
             render();
             save();
+            // On mobile, close sidebar
+            if(window.innerWidth < 1024) toggleSidebar();
         }
 
         function playVideo(id) {
             appData.activeVideoId = id;
             render(); 
-            // Don't save activeVideoId specifically to ensure fresh start on reload? 
-            // Actually, let's save it so they pick up where left off.
             save();
         }
 
-        function createFolder() {
-            const nameInput = document.getElementById('input-folder-name');
-            const name = nameInput.value.trim();
-            if (!name) return;
+        function toggleWatched(id) {
+            const folder = getActiveFolder();
+            const v = folder.videos.find(x => x.id === id);
+            if(v) { v.watched = !v.watched; render(); save(); }
+        }
+        function toggleFavorite(id) {
+            const folder = getActiveFolder();
+            const v = folder.videos.find(x => x.id === id);
+            if(v) { v.favorite = !v.favorite; render(); save(); }
+        }
 
-            const newFolder = {
-                id: generateId(),
-                name: name,
-                videos: []
-            };
+        function handleSearch(val) { searchQuery = val; renderMainArea(); }
+        function toggleFavoritesFilter() { showFavoritesOnly = !showFavoritesOnly; renderMainArea(); }
 
-            appData.folders.push(newFolder);
-            appData.activeFolderId = newFolder.id;
+        // --- Notes ---
+        function loadNotesForActiveVideo() {
+            const area = document.getElementById('video-notes-area');
+            const status = document.getElementById('notes-status');
             
-            nameInput.value = '';
+            if (!appData.activeVideoId) {
+                area.value = '';
+                area.disabled = true;
+                area.placeholder = "Select a video to write notes...";
+                status.innerText = "";
+                return;
+            }
+
+            const v = getActiveFolder()?.videos.find(x => x.id === appData.activeVideoId);
+            if (v) {
+                area.disabled = false;
+                area.value = v.notes || '';
+                area.placeholder = `Notes for: ${v.title}...\n- Key Formula\n- Important Timestamp`;
+                status.innerText = "Auto-saved";
+            }
+        }
+
+        function setupNotesListener() {
+            const area = document.getElementById('video-notes-area');
+            area.addEventListener('input', (e) => {
+                if (!appData.activeVideoId) return;
+                const v = getActiveFolder()?.videos.find(x => x.id === appData.activeVideoId);
+                if (v) {
+                    v.notes = e.target.value;
+                    const status = document.getElementById('notes-status');
+                    status.innerText = "Saving...";
+                    status.classList.add('text-accent-500');
+                    save(); // Save to localstorage is fast enough to do on input for this scale
+                    setTimeout(() => {
+                        status.innerText = "Saved";
+                        status.classList.remove('text-accent-500');
+                    }, 500);
+                }
+            });
+        }
+
+        // --- CRUD ---
+        function getActiveFolder() { return appData.folders.find(f => f.id === appData.activeFolderId); }
+
+        function createFolder() {
+            const name = document.getElementById('input-folder-name').value.trim();
+            if (!name) return;
+            const newId = generateId();
+            appData.folders.push({ id: newId, name: name, videos: [] });
+            appData.activeFolderId = newId;
             closeModals();
+            showToast('Subject Created');
             render();
             save();
         }
 
         function addVideo() {
-            const urlInput = document.getElementById('input-video-url');
-            const titleInput = document.getElementById('input-video-title');
-            
-            const url = urlInput.value.trim();
-            const title = titleInput.value.trim();
+            const url = document.getElementById('input-video-url').value.trim();
+            const title = document.getElementById('input-video-title').value.trim();
+            const tag = document.getElementById('input-video-tag').value;
             const videoId = getYouTubeId(url);
-
-            if (!videoId) {
-                alert("Invalid YouTube URL");
-                return;
-            }
-
-            const activeFolder = appData.folders.find(f => f.id === appData.activeFolderId);
-            if (!activeFolder) return;
+            
+            if(!videoId) { showToast('Invalid YouTube URL', 'error'); return; }
+            
+            const folder = getActiveFolder();
+            if(!folder) return;
 
             const newVideo = {
                 id: generateId(),
                 videoId: videoId,
-                title: title || `Video ${activeFolder.videos.length + 1}`,
-                thumbnail: getThumbnail(videoId),
-                addedAt: new Date().toISOString()
+                title: title || `Lecture ${folder.videos.length + 1}`,
+                thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                addedAt: new Date().toISOString(),
+                watched: false, favorite: false, tag: tag, notes: ''
             };
-
-            activeFolder.videos.push(newVideo);
+            folder.videos.push(newVideo);
+            if(folder.videos.length === 1) appData.activeVideoId = newVideo.id;
             
-            urlInput.value = '';
-            titleInput.value = '';
             closeModals();
-            
-            // Auto play if it's the first video
-            if (activeFolder.videos.length === 1) {
-                appData.activeVideoId = newVideo.id;
-            }
-
+            showToast('Video Added');
             render();
             save();
         }
 
         function deleteCurrentFolder() {
-            const folder = appData.folders.find(f => f.id === appData.activeFolderId);
-            if (!folder) return;
-            
-            if (confirm(`Delete folder "${folder.name}" and all its videos?`)) {
+            const folder = getActiveFolder();
+            if(!folder) return;
+            if(confirm(`Delete "${folder.name}"? This action cannot be undone.`)) {
                 appData.folders = appData.folders.filter(f => f.id !== appData.activeFolderId);
-                if (appData.folders.length > 0) {
-                    appData.activeFolderId = appData.folders[0].id;
-                } else {
-                    appData.activeFolderId = null;
-                }
+                appData.activeFolderId = appData.folders.length > 0 ? appData.folders[0].id : null;
                 appData.activeVideoId = null;
-                render();
-                save();
+                render(); save();
+                showToast('Folder Deleted');
             }
         }
-
-        function deleteVideo(videoId) {
-            const activeFolder = appData.folders.find(f => f.id === appData.activeFolderId);
-            if (!activeFolder) return;
-
-            if (confirm("Remove this video from the playlist?")) {
-                activeFolder.videos = activeFolder.videos.filter(v => v.id !== videoId);
-                if (appData.activeVideoId === videoId) {
-                    appData.activeVideoId = null;
-                }
-                render();
-                save();
+        function deleteVideo(id) {
+            if(confirm('Remove this video?')) {
+                const f = getActiveFolder();
+                f.videos = f.videos.filter(v => v.id !== id);
+                if(appData.activeVideoId === id) appData.activeVideoId = null;
+                render(); save();
+                showToast('Video Removed');
             }
         }
-
-        // Rename Logic
-        function openModal(type) {
-            document.getElementById(`modal-${type}`).classList.remove('hidden');
-            if (type === 'folder') document.getElementById('input-folder-name').focus();
-            if (type === 'video') document.getElementById('input-video-url').focus();
-        }
-
+        
+        // --- Rename System ---
         function editCurrentFolder() {
-            const folder = appData.folders.find(f => f.id === appData.activeFolderId);
-            if (!folder) return;
-            
-            startRename('folder', folder.id, folder.name);
+            const f = getActiveFolder();
+            if(f) openModal('rename', { type: 'folder', id: f.id, val: f.name });
         }
-
-        function renameVideo(videoId) {
-            const folder = appData.folders.find(f => f.id === appData.activeFolderId);
-            const video = folder.videos.find(v => v.id === videoId);
-            if (video) startRename('video', videoId, video.title);
+        function renameVideo(id) {
+            const v = getActiveFolder().videos.find(x => x.id === id);
+            if(v) openModal('rename', { type: 'video', id: id, val: v.title });
         }
-
-        function startRename(type, id, currentValue) {
-            const modal = document.getElementById('modal-rename');
-            document.getElementById('rename-type').value = type;
-            document.getElementById('rename-id').value = id;
-            const input = document.getElementById('input-rename-value');
-            input.value = currentValue;
-            
-            modal.classList.remove('hidden');
-            input.focus();
-        }
-
         function saveRename() {
             const type = document.getElementById('rename-type').value;
             const id = document.getElementById('rename-id').value;
-            const newValue = document.getElementById('input-rename-value').value.trim();
+            const val = document.getElementById('input-rename-value').value.trim();
+            if(!val) return;
 
-            if (!newValue) return;
-
-            if (type === 'folder') {
-                const folder = appData.folders.find(f => f.id === id);
-                if (folder) folder.name = newValue;
-            } else if (type === 'video') {
-                const folder = appData.folders.find(f => f.id === appData.activeFolderId);
-                const video = folder.videos.find(v => v.id === id);
-                if (video) video.title = newValue;
+            if(type === 'folder') {
+                const f = appData.folders.find(x => x.id === id);
+                if(f) f.name = val;
+            } else {
+                const v = getActiveFolder().videos.find(x => x.id === id);
+                if(v) v.title = val;
             }
-
             closeModals();
-            render();
-            save();
+            render(); save();
         }
 
+        // --- Modals & UI Utils ---
+        function selectTag(val) {
+            document.getElementById('input-video-tag').value = val;
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                if(btn.dataset.value === val) {
+                    btn.classList.add('bg-accent-500/10', 'text-accent-400', 'border-accent-500/30');
+                    btn.classList.remove('bg-zinc-800', 'text-zinc-400', 'border-zinc-700');
+                } else {
+                    btn.classList.remove('bg-accent-500/10', 'text-accent-400', 'border-accent-500/30');
+                    btn.classList.add('bg-zinc-800', 'text-zinc-400', 'border-zinc-700');
+                }
+            });
+        }
+
+        function openModal(name, data=null) {
+            const bg = document.getElementById('modal-backdrop');
+            const m = document.getElementById(`modal-${name}`);
+            bg.classList.remove('hidden');
+            setTimeout(() => {
+                bg.classList.remove('opacity-0');
+                m.classList.remove('hidden');
+                setTimeout(() => { m.classList.remove('opacity-0', 'scale-95'); m.classList.add('scale-100'); }, 10);
+            }, 10);
+
+            // Resets
+            if(name === 'folder') document.getElementById('input-folder-name').value = '';
+            if(name === 'video') {
+                document.getElementById('input-video-url').value = '';
+                document.getElementById('input-video-title').value = '';
+                selectTag('Lecture');
+            }
+            if(name === 'rename' && data) {
+                document.getElementById('rename-type').value = data.type;
+                document.getElementById('rename-id').value = data.id;
+                document.getElementById('input-rename-value').value = data.val;
+            }
+        }
         function closeModals() {
-            document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+            const bg = document.getElementById('modal-backdrop');
+            const modals = document.querySelectorAll('[id^="modal-"]:not(#modal-backdrop)');
+            bg.classList.add('opacity-0');
+            modals.forEach(m => { m.classList.add('opacity-0', 'scale-95'); m.classList.remove('scale-100'); });
+            setTimeout(() => { bg.classList.add('hidden'); modals.forEach(m => m.classList.add('hidden')); }, 200);
         }
 
-        // --- Utility: Escape HTML to prevent XSS ---
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function showToast(msg, type='success') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-2xl pointer-events-auto transform transition-all duration-300 animate-slide-in bg-zinc-800 text-white border border-zinc-700`;
+            const icon = type === 'error' ? 'alert-circle' : 'check-circle';
+            const iconColor = type === 'error' ? 'text-red-400' : 'text-accent-400';
+            t.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 ${iconColor}"></i><span class="text-xs font-medium">${msg}</span>`;
+            c.appendChild(t);
+            lucide.createIcons();
+            setTimeout(() => { t.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => t.remove(), 300); }, 3000);
         }
 
-        // --- Run ---
+        // --- Helpers ---
+        function generateId() { return Math.random().toString(36).substr(2, 9); }
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function getYouTubeId(url) {
+            if (!url) return null;
+            const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // --- Backup ---
+        function exportData() {
+            const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `jee-os-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Backup downloaded');
+        }
+        function importData(input) {
+            const f = input.files[0];
+            if(!f) return;
+            const r = new FileReader();
+            r.onload = e => {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    if(d.folders) {
+                        if(confirm('Overwrite current data with this backup?')) {
+                            appData = d; save(); render(); showToast('Backup restored');
+                        }
+                    } else showToast('Invalid file format', 'error');
+                } catch(e) { showToast('Error parsing file', 'error'); }
+                input.value = '';
+            };
+            r.readAsText(f);
+        }
+        function resetData() {
+            if(confirm('Warning: This will delete ALL data. Continue?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(OLD_STORAGE_KEY_V2);
+                localStorage.removeItem(OLD_STORAGE_KEY_V1);
+                location.reload();
+            }
+        }
+
         window.addEventListener('load', init);
-
     </script>
 </body>
 </html>
