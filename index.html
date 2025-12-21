@@ -138,8 +138,8 @@
                 </button>
             </div>
             <div class="px-4 pt-2 pb-2 flex items-center justify-between group">
-                <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider group-hover:text-zinc-300 transition-colors">Subjects</span>
-                <button onclick="openModal('folder')" class="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-surfaceHighlight rounded" title="New Subject">
+                <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider group-hover:text-zinc-300 transition-colors">FOLDERS</span>
+                <button onclick="openModal('folder')" class="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-surfaceHighlight rounded" title="New Folder">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 </button>
             </div>
@@ -163,7 +163,7 @@
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary-500 text-white">Continue</span>
                                 </div>
-                                <h2 id="hero-title" class="text-2xl font-bold text-white mb-1">Subject Name</h2>
+                                <h2 id="hero-title" class="text-2xl font-bold text-white mb-1">Folder Name</h2>
                                 <p id="hero-sub" class="text-zinc-400 text-sm font-mono">Lecture Title</p>
                             </div>
                             <button onclick="resumeLast()" class="px-6 py-3 bg-white text-black hover:bg-zinc-200 rounded-lg text-sm font-bold shadow-xl shadow-white/5 transition-transform hover:scale-105 flex items-center gap-2">
@@ -180,7 +180,7 @@
                         <div class="w-12 h-12 bg-surfaceHighlight rounded-full flex items-center justify-center mb-4 text-zinc-600">
                             <i data-lucide="folder" class="w-6 h-6"></i>
                         </div>
-                        <p class="text-zinc-400 text-sm">No subjects yet. Create one or import data.</p>
+                        <p class="text-zinc-400 text-sm">No folders yet. Create one or import data.</p>
                     </div>
                 </div>
             </main>
@@ -284,7 +284,7 @@
         
         <!-- Add Folder -->
         <div id="modal-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-1">New Subject</h3>
+            <h3 class="text-lg font-bold text-white mb-1">New Folder</h3>
             <p class="text-xs text-zinc-500 mb-5">Create a folder to organize lectures.</p>
             <input type="text" id="inp-folder-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700 mb-4" placeholder="e.g. Physics - Optics">
             <div class="flex justify-end gap-2">
@@ -319,10 +319,10 @@
 
         <!-- Edit Folder -->
         <div id="modal-edit-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-4">Manage Subject</h3>
+            <h3 class="text-lg font-bold text-white mb-4">Manage Folder</h3>
             <input type="text" id="inp-edit-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none mb-4">
             <button onclick="deleteCurrentFolder()" class="w-full py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg border border-red-500/20 flex items-center justify-center gap-2 mb-2">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Subject
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Folder
             </button>
             <div class="flex justify-end gap-2 pt-2 border-t border-border">
                 <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white">Cancel</button>
@@ -763,7 +763,7 @@
         }
 
         function deleteCurrentFolder() {
-            if(!confirm('Delete Subject?')) return;
+            if(!confirm('Delete Folder?')) return;
             db.folders = db.folders.filter(f => f.id !== activeFolderId);
             save(); renderDashboard(); closeModals();
         }
