@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEE Main 2026 - Study OS</title>
+    <title>JEE Main 2026 - Study OS Ultra</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,29 +23,32 @@
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        background: '#09090b',
-                        surface: '#18181b',
-                        surfaceHighlight: '#27272a',
-                        border: '#27272a',
+                        background: '#050505',
+                        surface: '#0a0a0a',
+                        surfaceHighlight: '#171717',
+                        border: '#262626',
                         primary: {
                             400: '#818cf8',
                             500: '#6366f1',
                             600: '#4f46e5',
-                            glow: 'rgba(99, 102, 241, 0.15)'
+                            glow: 'rgba(99, 102, 241, 0.25)'
+                        },
+                        accent: {
+                            teal: '#2dd4bf',
+                            rose: '#fb7185'
                         }
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.4s ease-out forwards',
-                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
+                        slideUp: { '0%': { transform: 'translateY(15px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
                     }
                 }
             }
@@ -53,86 +56,91 @@
     </script>
 
     <style>
-        /* Base & Scrollbar */
-        body { background-color: #09090b; color: #e4e4e7; overflow: hidden; }
+        /* Base Styles */
+        body { background-color: #050505; color: #e5e5e5; overflow: hidden; }
         
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #525252; }
 
-        /* Glass Effects */
+        /* Glass & Utilities */
         .glass {
-            background: rgba(24, 24, 27, 0.6);
+            background: rgba(23, 23, 23, 0.6);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+        
+        /* Dragging */
+        .dragging-item { opacity: 0.5; border: 1px dashed #6366f1; background: #171717; }
+        .drag-over { border-top: 2px solid #6366f1; padding-top: 4px; transition: all 0.1s; }
 
-        /* Drag & Drop */
-        .dragging-item { opacity: 0.5; border: 1px dashed #6366f1; background: #18181b; }
-        .drag-over { border-top: 2px solid #6366f1; padding-top: 2px; transition: all 0.1s; }
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #e5e5e5; cursor: pointer; margin-top: -5px; box-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 2px; cursor: pointer; background: #404040; border-radius: 1px;
+        }
 
         /* Checkbox */
-        .custom-checkbox input:checked + div { background-color: #10b981; border-color: #10b981; }
-        .custom-checkbox input:checked + div svg { display: block; }
+        .checkbox-wrapper input:checked + div { background-color: #6366f1; border-color: #6366f1; }
+        .checkbox-wrapper input:checked + div svg { display: block; }
 
-        /* Progress Ring */
-        .progress-ring__circle {
-            transition: stroke-dashoffset 0.8s ease-in-out;
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-        }
+        /* Video Filters */
+        .filter-invert { filter: invert(1) hue-rotate(180deg); }
+        .filter-contrast { filter: contrast(1.3) brightness(1.1); }
+        .filter-grayscale { filter: grayscale(1); }
 
-        /* Cinema Mode */
-        body.cinema-mode header,
-        body.cinema-mode #sidebar,
-        body.cinema-mode #playlist-column {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
+        /* Loader */
+        .loader {
+            border: 2px solid rgba(255,255,255,0.1);
+            border-left-color: #6366f1;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
         }
-        body.cinema-mode #player-column { z-index: 50; }
-        
-        /* Dashboard Card Hover */
-        .dash-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans selection:bg-primary-500/30 selection:text-white">
 
-    <!-- Cinema Overlay -->
-    <div id="cinema-overlay" class="fixed inset-0 bg-black/95 z-40 hidden opacity-0 transition-opacity duration-500 pointer-events-none"></div>
+    <!-- Youtube API Script -->
+    <script src="https://www.youtube.com/iframe_api"></script>
 
     <!-- Header -->
-    <header class="h-14 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-4 z-50 flex-shrink-0 relative">
+    <header class="h-14 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-4 z-50 flex-shrink-0">
         <div class="flex items-center gap-4">
-            <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 text-zinc-400 hover:text-white rounded-lg">
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 text-zinc-400 hover:text-white rounded-lg">
                 <i data-lucide="menu" class="w-5 h-5"></i>
             </button>
             <div class="flex items-center gap-3 cursor-pointer group" onclick="renderDashboard()">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-indigo-900 flex items-center justify-center shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow">
-                    <i data-lucide="zap" class="w-4 h-4 text-white fill-current"></i>
+                <div class="w-8 h-8 rounded-xl bg-primary-600 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all">
+                    <i data-lucide="orbit" class="w-5 h-5 text-white"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm font-bold text-white tracking-tight leading-none">JEE<span class="text-primary-500">OS</span></h1>
-                    <span class="text-[9px] text-zinc-500 font-mono tracking-wider uppercase">Study System</span>
+                    <h1 class="text-sm font-bold text-white tracking-tight leading-none">STUDY<span class="text-primary-500">OS</span></h1>
+                    <span class="text-[9px] text-zinc-500 font-mono tracking-wider uppercase">Ultra</span>
                 </div>
             </div>
         </div>
 
         <div class="flex items-center gap-2">
-            <!-- Shortcuts Hint (Desktop) -->
-            <div class="hidden md:flex items-center gap-3 mr-4 px-3 py-1.5 bg-surface border border-border rounded-md text-[10px] text-zinc-500 font-mono">
-                <span class="flex items-center gap-1"><kbd class="bg-surfaceHighlight px-1 rounded text-zinc-300">F</kbd> Fullscreen</span>
-                <span class="w-px h-3 bg-border"></span>
-                <span class="flex items-center gap-1"><kbd class="bg-surfaceHighlight px-1 rounded text-zinc-300">C</kbd> Cinema</span>
-            </div>
-
-            <button onclick="exportData()" class="p-2 text-zinc-400 hover:text-white hover:bg-surface rounded-lg transition-colors" title="Backup">
-                <i data-lucide="download-cloud" class="w-4 h-4"></i>
+            <!-- Hidden File Input for Import -->
+            <input type="file" id="import-file" accept=".json" class="hidden" onchange="handleFileSelect(this)">
+            
+            <button onclick="document.getElementById('import-file').click()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors border border-transparent hover:border-border">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i> 
+                <span class="hidden sm:inline">Import</span>
             </button>
-            <button onclick="resetData()" class="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" title="Reset">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <button onclick="exportData()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors border border-transparent hover:border-border">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Backup</span>
             </button>
         </div>
     </header>
@@ -140,432 +148,564 @@
     <div class="flex flex-1 overflow-hidden relative">
         
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-background border-r border-border flex flex-col absolute lg:static inset-y-0 left-0 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
-            <!-- Nav Links -->
-            <div class="p-3 space-y-1">
-                <button onclick="renderDashboard()" id="nav-dash" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-white bg-surface border border-border">
+        <aside id="sidebar" class="w-64 bg-surface border-r border-border flex flex-col absolute lg:static inset-y-0 left-0 z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div class="p-3">
+                <button onclick="renderDashboard()" id="nav-dash" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-colors text-white bg-surfaceHighlight border border-border">
                     <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                    Dashboard
+                    DASHBOARD
                 </button>
             </div>
             
-            <div class="px-4 pt-4 pb-2 flex items-center justify-between">
-                <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">My Subjects</span>
-                <button onclick="openModal('folder')" class="text-zinc-500 hover:text-primary-400 transition-colors p-1">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
+            <div class="px-4 pt-4 pb-2 flex items-center justify-between group">
+                <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider group-hover:text-zinc-300 transition-colors">Library</span>
+                <button onclick="openModal('folder')" class="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-surfaceHighlight rounded" title="New Subject">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 </button>
             </div>
 
-            <!-- Subject List -->
-            <div id="sidebar-list" class="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5 custom-scrollbar">
-                <!-- Injected via JS -->
+            <div id="sidebar-list" class="flex-1 overflow-y-auto px-2 pb-4 space-y-1 custom-scrollbar">
+                <!-- Subject List -->
             </div>
-
-            <!-- Footer -->
-            <div class="p-3 border-t border-border bg-background text-[10px] text-zinc-600 flex justify-between items-center">
-                <span id="version-tag">v2.1 Stable</span>
-                <span id="sync-status" class="text-emerald-500">Synced</span>
+            
+            <div class="p-3 border-t border-border">
+                 <button onclick="resetData()" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-[10px] font-medium text-zinc-600 hover:text-red-400 hover:bg-red-500/5 rounded-lg transition-colors">
+                    <i data-lucide="trash-2" class="w-3 h-3"></i> Factory Reset
+                </button>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 relative flex flex-col bg-black overflow-hidden">
-            
-            <!-- VIEW: DASHBOARD -->
-            <div id="view-dashboard" class="absolute inset-0 overflow-y-auto p-6 md:p-10 z-10 bg-background hidden">
-                <div class="max-w-6xl mx-auto space-y-8 animate-slide-up">
-                    
-                    <!-- Hero -->
-                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border">
-                        <div>
-                            <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-                            <p class="text-zinc-400 text-sm">Track your JEE preparation progress and manage your playlist.</p>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="resumeLast()" id="btn-resume" class="hidden items-center gap-2 px-5 py-2.5 bg-white text-black hover:bg-zinc-200 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-white/5">
-                                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Resume
-                            </button>
-                            <button onclick="openModal('folder')" class="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-medium shadow-lg shadow-primary-500/20 transition-all hover:scale-105">
-                                <i data-lucide="folder-plus" class="w-4 h-4"></i> New Subject
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Stats Row -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Progress Circle -->
-                        <div class="glass p-6 rounded-xl flex items-center gap-6 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-3 opacity-10">
-                                <i data-lucide="pie-chart" class="w-24 h-24 text-white"></i>
-                            </div>
-                            <div class="relative w-20 h-20 flex-shrink-0">
-                                <svg class="w-full h-full" viewBox="0 0 36 36">
-                                    <path class="text-zinc-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
-                                    <path id="dash-circle" class="progress-ring__circle text-primary-500" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white" id="dash-percent">0%</div>
-                            </div>
-                            <div class="relative z-10">
-                                <h3 class="text-base font-semibold text-white">Total Progress</h3>
-                                <p class="text-xs text-zinc-500 mt-1">Based on watched videos across all subjects.</p>
-                            </div>
-                        </div>
-
-                        <!-- Count Stats -->
-                        <div class="glass p-6 rounded-xl flex flex-col justify-center gap-1 group">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="p-1.5 bg-zinc-800 rounded text-zinc-400 group-hover:text-white transition-colors">
-                                    <i data-lucide="layers" class="w-4 h-4"></i>
-                                </div>
-                                <span class="text-xs font-medium text-zinc-500 uppercase tracking-wider">Total Lectures</span>
-                            </div>
-                            <div class="text-3xl font-bold text-white" id="stat-total">0</div>
-                        </div>
-
-                        <div class="glass p-6 rounded-xl flex flex-col justify-center gap-1 group">
-                             <div class="flex items-center gap-2 mb-2">
-                                <div class="p-1.5 bg-emerald-500/10 rounded text-emerald-500">
-                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
-                                </div>
-                                <span class="text-xs font-medium text-zinc-500 uppercase tracking-wider">Completed</span>
-                            </div>
-                            <div class="text-3xl font-bold text-emerald-400" id="stat-done">0</div>
-                        </div>
-                    </div>
-
-                    <!-- Grid -->
-                    <div>
-                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <i data-lucide="library" class="w-5 h-5 text-primary-500"></i>
-                            Your Subjects
-                        </h3>
-                        <div id="dash-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            <!-- Cards injected here -->
-                        </div>
-                        <div id="dash-empty" class="hidden flex-col items-center justify-center py-16 border-2 border-dashed border-border rounded-xl bg-surface/30">
-                            <div class="w-14 h-14 bg-surface rounded-full flex items-center justify-center mb-4">
-                                <i data-lucide="folder-open" class="w-7 h-7 text-zinc-600"></i>
-                            </div>
-                            <p class="text-zinc-300 font-medium">No subjects yet.</p>
-                            <p class="text-zinc-500 text-xs mt-1">Create your first folder to get started.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: PLAYER -->
-            <div id="view-player" class="absolute inset-0 flex flex-col md:flex-row bg-black hidden">
+        <!-- DASHBOARD VIEW -->
+        <main id="view-dashboard" class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10 bg-background">
+            <div class="max-w-7xl mx-auto space-y-8 animate-slide-up">
                 
-                <!-- Center Stage -->
-                <div id="player-column" class="flex-1 flex flex-col relative min-w-0 bg-black">
-                    <!-- Video Area -->
-                    <div class="flex-1 relative bg-black flex items-center justify-center overflow-hidden group">
-                        <div id="iframe-wrapper" class="w-full h-full relative z-10">
-                            <!-- IFRAME -->
+                <!-- Hero / Continue Watching -->
+                <div id="hero-section" class="hidden glass rounded-2xl p-6 md:p-8 border border-primary-500/20 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                    <div class="relative z-10 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-300 text-[10px] font-bold uppercase tracking-wider border border-primary-500/30">Continue Learning</span>
+                            </div>
+                            <h2 id="hero-title" class="text-2xl md:text-3xl font-bold text-white mb-1">Physics - Rotational Motion</h2>
+                            <p id="hero-sub" class="text-zinc-400 text-sm font-medium">Lecture 04 • Moment of Inertia</p>
                         </div>
-                        <div id="drag-overlay" class="absolute inset-0 z-50 bg-transparent hidden"></div>
-                    </div>
-
-                    <!-- Controls -->
-                    <div class="h-16 bg-background border-t border-border flex items-center justify-between px-6 z-20">
-                        <div class="min-w-0 mr-4">
-                            <h2 id="player-title" class="text-sm font-semibold text-white truncate">No Video Selected</h2>
-                            <p id="player-meta" class="text-[11px] text-zinc-500 truncate mt-0.5 font-mono">Select a lecture to play</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="toggleCinemaMode()" class="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-surface transition-colors" title="Cinema Mode (C)">
-                                <i data-lucide="moon" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="toggleTheaterMode()" class="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-surface transition-colors" title="Theater Mode (T)">
-                                <i data-lucide="panel-right-close" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="toggleFullscreen()" class="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-surface transition-colors" title="Fullscreen (F)">
-                                <i data-lucide="maximize" class="w-4 h-4"></i>
-                            </button>
-                        </div>
+                        <button onclick="resumeLast()" class="flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-zinc-200 rounded-xl text-sm font-bold shadow-xl shadow-white/5 transition-all hover:scale-105 group-hover:shadow-white/10">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i> Resume
+                        </button>
                     </div>
                 </div>
 
-                <!-- Playlist Sidebar -->
-                <div id="playlist-column" class="w-full md:w-80 lg:w-96 bg-background border-l border-border flex flex-col flex-shrink-0 transition-all duration-300">
-                    
-                    <div class="h-14 flex items-center justify-between px-4 border-b border-border bg-background">
-                        <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Playlist</span>
-                        <div class="flex items-center gap-1">
-                             <button onclick="openModal('video')" class="p-1.5 text-primary-400 hover:text-white hover:bg-primary-500/20 rounded transition-colors text-xs font-medium flex items-center gap-1.5">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add
-                            </button>
-                            <div class="w-px h-3 bg-border mx-1"></div>
-                            <button onclick="openModal('edit-folder')" class="p-1.5 text-zinc-500 hover:text-white hover:bg-surface rounded transition-colors">
-                                <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
-                            </button>
-                        </div>
+                <!-- Grid Header -->
+                <div class="flex items-end justify-between border-b border-border pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Your Subjects</h2>
+                        <p class="text-zinc-500 text-xs mt-1">Manage your video lectures and progress.</p>
                     </div>
-
-                    <!-- Search -->
-                    <div class="p-3 border-b border-border bg-surface/30">
-                        <div class="relative">
-                            <i data-lucide="search" class="absolute left-3 top-2.5 w-3.5 h-3.5 text-zinc-500"></i>
-                            <input type="text" id="playlist-search" oninput="renderPlaylist()" placeholder="Filter lectures..." class="w-full bg-background border border-border rounded-lg pl-9 py-2 text-xs text-white focus:outline-none focus:border-primary-500/50 transition-colors placeholder-zinc-700">
-                        </div>
-                    </div>
-
-                    <!-- Items -->
-                    <div id="playlist-container" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar bg-background">
-                        <!-- Injected -->
-                    </div>
-
-                    <!-- Footer Status -->
-                    <div class="p-2 border-t border-border bg-background text-[10px] text-zinc-500 text-center font-mono">
-                        <span id="playlist-status">0/0 Watched</span>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- Mobile Overlay -->
-    <div id="mobile-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/60 z-20 lg:hidden hidden"></div>
-
-    <!-- MODALS -->
-    <div id="modal-wrapper" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] hidden opacity-0 transition-opacity flex items-center justify-center p-4" onclick="if(event.target===this) closeModals()">
-        
-        <!-- Folder Modal -->
-        <div id="modal-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-1">New Subject</h3>
-            <p class="text-xs text-zinc-500 mb-5">Create a folder to organize your lectures.</p>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-zinc-500">Subject Name</label>
-                    <input type="text" id="inp-folder-name" class="w-full mt-1.5 bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700" placeholder="e.g. Physics - Rotational Motion">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
-                    <button onclick="createFolder()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium shadow-lg shadow-primary-500/20">Create Folder</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Video Modal -->
-        <div id="modal-video" class="bg-surface border border-border w-full max-w-md rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-1">Add Lecture</h3>
-            <p class="text-xs text-zinc-500 mb-5">Add a YouTube video to your playlist.</p>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-zinc-500">YouTube URL</label>
-                    <div class="relative mt-1.5">
-                        <i data-lucide="link" class="absolute left-3 top-2.5 w-4 h-4 text-zinc-600"></i>
-                        <input type="text" id="inp-video-url" class="w-full bg-background border border-border rounded-lg pl-9 p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700" placeholder="https://youtu.be/..." oninput="parseUrl(this)">
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-zinc-500">Title (Optional)</label>
-                    <input type="text" id="inp-video-title" class="w-full mt-1.5 bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700" placeholder="Lecture Title">
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Tag</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button type="button" onclick="setTag('Lecture')" class="tag-btn px-2 py-2 text-xs border rounded-lg text-center transition-colors" data-tag="Lecture">Lecture</button>
-                        <button type="button" onclick="setTag('Concept')" class="tag-btn px-2 py-2 text-xs border rounded-lg text-center transition-colors" data-tag="Concept">Concept</button>
-                        <button type="button" onclick="setTag('PYQ')" class="tag-btn px-2 py-2 text-xs border rounded-lg text-center transition-colors" data-tag="PYQ">PYQ</button>
-                        <button type="button" onclick="setTag('Revision')" class="tag-btn px-2 py-2 text-xs border rounded-lg text-center transition-colors" data-tag="Revision">Revision</button>
-                    </div>
-                    <input type="hidden" id="inp-video-tag" value="Lecture">
-                </div>
-                <div class="flex justify-end gap-2 pt-4">
-                    <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
-                    <button onclick="addVideo()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium shadow-lg shadow-primary-500/20">Add Video</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Folder Modal -->
-        <div id="modal-edit-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-4">Manage Subject</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-zinc-500">Rename</label>
-                    <input type="text" id="inp-edit-name" class="w-full mt-1.5 bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none">
-                </div>
-                <div class="pt-4 border-t border-border">
-                    <button onclick="deleteCurrentFolder()" class="w-full py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg border border-red-500/20 transition-colors flex items-center justify-center gap-2">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Subject
+                    <button onclick="openModal('folder')" class="flex items-center gap-2 text-primary-400 text-xs font-medium hover:text-primary-300 transition-colors">
+                        <i data-lucide="folder-plus" class="w-4 h-4"></i> Create New
                     </button>
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Done</button>
-                    <button onclick="saveEditFolder()" class="px-4 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg text-xs font-semibold">Save Changes</button>
+
+                <!-- Empty State -->
+                <div id="dash-empty" class="hidden flex-col items-center justify-center py-24 border-2 border-dashed border-border rounded-xl bg-surface/30">
+                    <div class="w-16 h-16 bg-surfaceHighlight rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="layers" class="w-8 h-8 text-zinc-600"></i>
+                    </div>
+                    <p class="text-zinc-300 font-medium">No subjects found</p>
+                    <p class="text-zinc-500 text-xs mt-1 mb-4">Import a backup or create a folder.</p>
+                </div>
+
+                <!-- Subject Grid -->
+                <div id="dash-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <!-- Cards injected here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- PLAYER VIEW -->
+        <main id="view-player" class="absolute inset-0 z-20 bg-background hidden flex flex-col md:flex-row">
+            
+            <!-- Video Column -->
+            <div id="main-content" class="flex-1 flex flex-col relative min-w-0 bg-black">
+                
+                <!-- Video Filter Overlay -->
+                <div id="video-fx-overlay" class="absolute inset-0 z-40 pointer-events-none mix-blend-overlay opacity-0 transition-opacity"></div>
+
+                <!-- Iframe Container -->
+                <div class="flex-1 relative bg-black flex items-center justify-center group overflow-hidden" id="video-container">
+                    <div id="yt-player-mount" class="w-full h-full relative z-10"></div>
+                    
+                    <!-- Drag Overlay -->
+                    <div id="drag-overlay" class="absolute inset-0 z-50 bg-primary-500/10 hidden backdrop-blur-[2px] border-4 border-dashed border-primary-500/50 m-4 rounded-xl flex items-center justify-center text-primary-200 font-bold text-lg animate-pulse">
+                        Drop Video Here
+                    </div>
+                </div>
+
+                <!-- Enhanced Controls Bar (The "Study Deck") -->
+                <div class="h-auto min-h-[4rem] bg-surface border-t border-border flex flex-col z-20">
+                    
+                    <!-- Top Row: Meta & Primary Tools -->
+                    <div class="flex items-center justify-between px-4 py-2 border-b border-border/50">
+                         <div class="flex items-center gap-3 min-w-0 mr-4">
+                            <button onclick="renderDashboard()" class="p-1.5 hover:bg-surfaceHighlight rounded-lg text-zinc-400 hover:text-white transition-colors">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <div class="min-w-0">
+                                <h2 id="player-title" class="text-xs font-bold text-white truncate">Select Video</h2>
+                                <p id="player-meta" class="text-[10px] text-zinc-500 truncate font-mono">--</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Vision Enhancers -->
+                        <div class="flex items-center gap-1 bg-surfaceHighlight/50 rounded-lg p-1 border border-border">
+                            <button onclick="toggleFilter('invert')" id="btn-fx-invert" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight transition-colors" title="Invert Colors (Reading White PDFs)">
+                                <i data-lucide="contrast" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="toggleFilter('contrast')" id="btn-fx-contrast" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight transition-colors" title="Boost Contrast">
+                                <i data-lucide="sun-medium" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <div class="w-px h-3 bg-border mx-1"></div>
+                            <button onclick="toggleZenMode()" id="btn-zen" class="p-1.5 rounded text-zinc-400 hover:text-primary-400 hover:bg-surfaceHighlight transition-colors" title="Zen Mode">
+                                <i data-lucide="expand" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row: The "Repeater" & Speed -->
+                    <div class="flex items-center justify-between px-4 py-2 bg-surfaceHighlight/20 gap-4 overflow-x-auto no-scrollbar">
+                        
+                        <!-- Loop Controls -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Repeater</span>
+                            <div class="flex items-center bg-surface border border-border rounded-md overflow-hidden">
+                                <button onclick="setLoopPoint('A')" id="btn-loop-a" class="px-3 py-1 text-[10px] font-mono hover:bg-primary-500/20 hover:text-primary-400 transition-colors border-r border-border text-zinc-400">A</button>
+                                <button onclick="setLoopPoint('B')" id="btn-loop-b" class="px-3 py-1 text-[10px] font-mono hover:bg-primary-500/20 hover:text-primary-400 transition-colors border-r border-border text-zinc-400">B</button>
+                                <button onclick="toggleLoop()" id="btn-loop-toggle" class="px-2 py-1 text-zinc-500 hover:text-white hover:bg-surfaceHighlight transition-colors">
+                                    <i data-lucide="repeat" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                            <span id="loop-status" class="text-[10px] text-zinc-600 font-mono hidden">Active</span>
+                        </div>
+
+                        <!-- Speed Dial -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Speed</span>
+                            <div class="flex items-center bg-surface border border-border rounded-md overflow-hidden">
+                                <button onclick="setSpeed(1)" class="px-2 py-1 text-[10px] font-bold hover:bg-surfaceHighlight text-zinc-400 hover:text-white transition-colors">1x</button>
+                                <button onclick="setSpeed(1.25)" class="px-2 py-1 text-[10px] font-bold hover:bg-surfaceHighlight text-zinc-400 hover:text-white transition-colors">1.25</button>
+                                <button onclick="setSpeed(1.5)" class="px-2 py-1 text-[10px] font-bold hover:bg-surfaceHighlight text-zinc-400 hover:text-white transition-colors">1.5</button>
+                                <button onclick="setSpeed(2)" class="px-2 py-1 text-[10px] font-bold hover:bg-surfaceHighlight text-zinc-400 hover:text-white transition-colors">2x</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel (Playlist) -->
+            <div id="right-panel" class="w-full md:w-80 bg-surface border-l border-border flex flex-col flex-shrink-0 transition-all duration-300">
+                <div class="p-3 border-b border-border flex gap-2">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-zinc-500"></i>
+                        <input type="text" id="playlist-search" oninput="renderPlaylist()" placeholder="Filter lectures..." class="w-full bg-background border border-border rounded-md pl-8 py-2 text-xs text-white focus:outline-none focus:border-primary-500 transition-colors">
+                    </div>
+                    <button onclick="openModal('video')" class="p-2 bg-primary-600 hover:bg-primary-500 text-white rounded-md shadow-lg shadow-primary-500/20 transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                
+                <div id="playlist-container" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar bg-background/50">
+                    <!-- Playlist Items -->
+                </div>
+                
+                <div class="p-2 border-t border-border bg-surface text-[10px] text-zinc-500 flex justify-between px-4 items-center">
+                    <span id="playlist-stats">0/0 Watched</span>
+                    <button onclick="openModal('edit-folder')" class="p-1 hover:text-white"><i data-lucide="settings-2" class="w-3 h-3"></i></button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modals -->
+        <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+            
+            <!-- Add Folder -->
+            <div id="modal-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+                <h3 class="text-lg font-bold text-white mb-1">New Subject</h3>
+                <p class="text-xs text-zinc-500 mb-5">Create a folder to organize your lectures.</p>
+                <input type="text" id="inp-folder-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700 mb-4" placeholder="e.g. Physics - Rotational Motion">
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                    <button onclick="createFolder()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium shadow-lg shadow-primary-500/20">Create</button>
+                </div>
+            </div>
+
+            <!-- Add Video -->
+            <div id="modal-video" class="bg-surface border border-border w-full max-w-md rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+                <h3 class="text-lg font-bold text-white mb-1">Add Lecture</h3>
+                <p class="text-xs text-zinc-500 mb-5">Paste a YouTube link.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-zinc-500">YouTube URL</label>
+                        <input type="text" id="inp-video-url" class="w-full mt-1 bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none" placeholder="https://youtu.be/...">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-zinc-500">Title (Optional)</label>
+                        <input type="text" id="inp-video-title" class="w-full mt-1 bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none" placeholder="Lecture Title">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-zinc-500 mb-2 block">Tag</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="setTag('Lecture')" class="tag-btn text-xs border rounded-lg py-2 transition-colors border-primary-500/50 bg-primary-500/10 text-primary-400" data-tag="Lecture">Lecture</button>
+                            <button onclick="setTag('Concept')" class="tag-btn text-xs border border-border text-zinc-500 rounded-lg py-2 hover:bg-surfaceHighlight transition-colors" data-tag="Concept">Concept</button>
+                            <button onclick="setTag('PYQ')" class="tag-btn text-xs border border-border text-zinc-500 rounded-lg py-2 hover:bg-surfaceHighlight transition-colors" data-tag="PYQ">PYQ</button>
+                            <button onclick="setTag('Revision')" class="tag-btn text-xs border border-border text-zinc-500 rounded-lg py-2 hover:bg-surfaceHighlight transition-colors" data-tag="Revision">Revision</button>
+                        </div>
+                        <input type="hidden" id="inp-video-tag" value="Lecture">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                        <button onclick="addVideo()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium shadow-lg shadow-primary-500/20">Add Video</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Folder -->
+            <div id="modal-edit-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+                <h3 class="text-lg font-bold text-white mb-4">Manage Subject</h3>
+                <input type="text" id="inp-edit-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none mb-4">
+                <button onclick="deleteCurrentFolder()" class="w-full py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg border border-red-500/20 transition-colors flex items-center justify-center gap-2 mb-2">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Subject
+                </button>
+                <div class="flex justify-end gap-2 pt-2 border-t border-border">
+                    <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                    <button onclick="saveEditFolder()" class="px-4 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg text-xs font-semibold">Save</button>
                 </div>
             </div>
         </div>
 
-    </div>
-
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 z-[80] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
-        <div class="bg-surface border border-border text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3">
-            <i id="toast-icon" data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
-            <span id="toast-msg" class="text-xs font-medium">Notification</span>
+        <!-- Toast -->
+        <div id="toast" class="fixed bottom-6 right-6 z-[100] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+            <div class="bg-surface border border-border text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3">
+                <i id="toast-icon" data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                <span id="toast-msg" class="text-xs font-medium">Notification</span>
+            </div>
         </div>
     </div>
 
-    <!-- JS LOGIC -->
+    <!-- Logic -->
     <script>
-        // --- CONSTANTS & STATE ---
-        const DB_KEY_V4 = 'jee_os_v4'; // New Key
-        const DB_KEY_OLD = 'jee_prep_manager_ultra_v1'; // Migration Target
-        
+        // --- DATA & STATE ---
+        const DB_KEY = 'jee_os_v4';
         let db = { folders: [], lastPlayed: null };
         let activeFolderId = null;
         let activeVideoId = null;
-        let isCinema = false;
-        let isTheater = false;
+        
+        // Player State
+        let player = null;
+        let loopStart = null;
+        let loopEnd = null;
+        let isLooping = false;
+        let loopInterval = null;
+        let zenMode = false;
 
-        // --- INIT & MIGRATION ---
+        // --- INIT ---
         function init() {
-            // 1. Check for V4 Data
-            const saved = localStorage.getItem(DB_KEY_V4);
-            if (saved) {
-                try { db = JSON.parse(saved); } catch(e) { console.error('DB Error', e); }
+            // Load Data
+            const saved = localStorage.getItem(DB_KEY);
+            if(saved) {
+                try { db = JSON.parse(saved); } catch(e) { console.error(e); }
             } else {
-                // 2. Migration Check
-                const oldData = localStorage.getItem(DB_KEY_OLD);
-                if (oldData) {
-                    try {
-                        const oldJson = JSON.parse(oldData);
-                        migrateData(oldJson);
-                    } catch(e) {
-                        console.error('Migration failed', e);
-                        seedDefault();
-                    }
-                } else {
-                    seedDefault();
-                }
+                // Initial Seed
+                const fid = uid();
+                db = { folders: [{id: fid, name: 'Physics - Mechanics', videos: []}], lastPlayed: null };
+                save();
             }
-            
-            // 3. Initial Render
-            lucide.createIcons();
-            setupDragDrop();
+
             renderSidebar();
             renderDashboard();
-            setupShortcuts();
+            lucide.createIcons();
+            setupDragDrop();
         }
 
-        function seedDefault() {
-            const fid = uid();
-            db = {
-                folders: [{ id: fid, name: 'Physics - Mechanics', videos: [] }],
-                lastPlayed: null
-            };
-            save();
+        // --- YOUTUBE API ---
+        function onYouTubeIframeAPIReady() {
+            // API loaded
         }
 
-        function migrateData(oldJson) {
-            console.log('Migrating data...');
-            db.folders = [];
+        function loadVideo(id) {
+            activeVideoId = id;
+            if(!id) {
+                if(player) { player.destroy(); player = null; }
+                document.getElementById('yt-player-mount').innerHTML = '<div class="w-full h-full flex items-center justify-center text-zinc-700"><i data-lucide="play" class="w-12 h-12"></i></div>';
+                document.getElementById('player-title').innerText = "Select Video";
+                document.getElementById('player-meta').innerText = "--";
+                lucide.createIcons();
+                return;
+            }
+
+            const folder = getFolder(activeFolderId);
+            const v = folder.videos.find(x => x.id === id);
             
-            if (oldJson.folders && Array.isArray(oldJson.folders)) {
-                oldJson.folders.forEach(f => {
-                    const newFolder = {
-                        id: f.id || uid(),
-                        name: f.name || 'Untitled',
-                        videos: []
-                    };
-                    
-                    if (f.videos && Array.isArray(f.videos)) {
-                        f.videos.forEach(v => {
-                            // Map old videoId to ytId, drop notes/thumbnail
-                            const ytId = v.videoId || v.ytId || extractYouTubeID(v.url); 
-                            if(ytId) {
-                                newFolder.videos.push({
-                                    id: v.id || uid(),
-                                    ytId: ytId,
-                                    title: v.title || 'Untitled Lecture',
-                                    tag: v.tag || 'Lecture',
-                                    watched: !!v.watched,
-                                    addedAt: v.addedAt || Date.now(),
-                                    favorite: !!v.favorite
-                                });
-                            }
-                        });
+            // Meta update
+            document.getElementById('player-title').innerText = v.title;
+            document.getElementById('player-meta').innerText = `${v.tag} • ${folder.name}`;
+
+            // Save state
+            db.lastPlayed = { folderId: activeFolderId, videoId: id };
+            save();
+
+            // Init Player
+            if(player) {
+                player.loadVideoById(v.ytId);
+            } else {
+                player = new YT.Player('yt-player-mount', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: v.ytId,
+                    playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1 },
+                    events: {
+                        'onStateChange': onPlayerStateChange
                     }
-                    db.folders.push(newFolder);
                 });
             }
+            renderPlaylist();
+        }
+
+        function onPlayerStateChange(event) {
+            // Auto-loop logic check
+            if (event.data == YT.PlayerState.PLAYING && isLooping) {
+                // Ensure loop logic is running
+            }
+        }
+
+        // --- LOOP LOGIC (The Repeater) ---
+        function setLoopPoint(point) {
+            if(!player || !player.getCurrentTime) return;
+            const t = player.getCurrentTime();
             
-            save();
-            toast('Data migrated successfully!', 'success');
+            if(point === 'A') {
+                loopStart = t;
+                document.getElementById('btn-loop-a').classList.add('text-primary-400', 'bg-primary-500/10');
+                toast(`Loop Start: ${formatTime(t)}`);
+            } else {
+                loopEnd = t;
+                document.getElementById('btn-loop-b').classList.add('text-primary-400', 'bg-primary-500/10');
+                toast(`Loop End: ${formatTime(t)}`);
+            }
+
+            if(loopStart !== null && loopEnd !== null) {
+                if(loopEnd < loopStart) { 
+                    // auto swap
+                    const temp = loopStart; loopStart = loopEnd; loopEnd = temp; 
+                }
+                enableLoop(true);
+            }
         }
 
-        // --- CORE FUNCTIONS ---
-        function save() {
-            localStorage.setItem(DB_KEY_V4, JSON.stringify(db));
+        function toggleLoop() {
+            if(isLooping) enableLoop(false);
+            else if(loopStart !== null && loopEnd !== null) enableLoop(true);
+            else toast('Set points A and B first', 'error');
         }
 
-        function uid() {
-            return Math.random().toString(36).substr(2, 9);
+        function enableLoop(enabled) {
+            isLooping = enabled;
+            const status = document.getElementById('loop-status');
+            const btn = document.getElementById('btn-loop-toggle');
+            
+            if(enabled) {
+                status.classList.remove('hidden');
+                btn.classList.add('text-primary-400');
+                if(loopInterval) clearInterval(loopInterval);
+                loopInterval = setInterval(() => {
+                    if(player && player.getCurrentTime) {
+                        const t = player.getCurrentTime();
+                        if(t >= loopEnd || t < loopStart) {
+                            player.seekTo(loopStart);
+                        }
+                    }
+                }, 500); // Check every 500ms
+                toast('Repeater Active');
+            } else {
+                status.classList.add('hidden');
+                btn.classList.remove('text-primary-400');
+                if(loopInterval) clearInterval(loopInterval);
+                loopInterval = null;
+                toast('Repeater Off');
+            }
         }
 
-        function getFolder(id) { return db.folders.find(f => f.id === id); }
-        function getActiveFolder() { return getFolder(activeFolderId); }
-
-        function extractYouTubeID(url) {
-            if(!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+        // --- CONTROLS ---
+        function setSpeed(rate) {
+            if(player && player.setPlaybackRate) {
+                player.setPlaybackRate(rate);
+                toast(`Speed: ${rate}x`);
+            }
         }
 
-        // --- VIEW CONTROLLERS ---
+        function toggleFilter(type) {
+            const container = document.getElementById('yt-player-mount'); // iframe sits inside
+            // We apply filter to the container's iframe
+            const iframe = container.querySelector('iframe');
+            if(!iframe) return;
+
+            // Reset others
+            if(type !== 'invert') iframe.classList.remove('filter-invert');
+            if(type !== 'contrast') iframe.classList.remove('filter-contrast');
+
+            if(type === 'invert') {
+                iframe.classList.toggle('filter-invert');
+                document.getElementById('btn-fx-invert').classList.toggle('text-white');
+            } else if (type === 'contrast') {
+                iframe.classList.toggle('filter-contrast');
+                document.getElementById('btn-fx-contrast').classList.toggle('text-white');
+            }
+        }
+
+        function toggleZenMode() {
+            zenMode = !zenMode;
+            const body = document.body;
+            const sidebar = document.getElementById('sidebar');
+            const right = document.getElementById('right-panel');
+            
+            if(zenMode) {
+                sidebar.classList.add('hidden');
+                right.classList.add('hidden');
+                document.querySelector('header').classList.add('hidden');
+                document.getElementById('btn-zen').classList.add('text-primary-400');
+            } else {
+                sidebar.classList.remove('hidden');
+                right.classList.remove('hidden');
+                document.querySelector('header').classList.remove('hidden');
+                document.getElementById('btn-zen').classList.remove('text-primary-400');
+            }
+            // Trigger resize for YT player
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        // --- CORE UI RENDERERS ---
         function renderDashboard() {
             activeFolderId = null;
             document.getElementById('view-dashboard').classList.remove('hidden');
             document.getElementById('view-player').classList.add('hidden');
-            document.getElementById('nav-dash').classList.replace('text-zinc-400', 'text-white');
-            document.getElementById('nav-dash').classList.replace('bg-transparent', 'bg-surface');
-            document.getElementById('nav-dash').classList.replace('border-transparent', 'border-border');
             
-            updateDashboardStats();
+            // Hero Logic
+            const hero = document.getElementById('hero-section');
+            if(db.lastPlayed) {
+                const f = getFolder(db.lastPlayed.folderId);
+                const v = f ? f.videos.find(x => x.id === db.lastPlayed.videoId) : null;
+                if(v) {
+                    hero.classList.remove('hidden');
+                    document.getElementById('hero-title').innerText = f.name;
+                    document.getElementById('hero-sub').innerText = v.title;
+                } else hero.classList.add('hidden');
+            } else hero.classList.add('hidden');
+
+            renderGrid();
             renderSidebar();
             
-            // Mobile menu close
+            // Mobile close
             document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('mobile-overlay').classList.add('hidden');
         }
 
-        function renderPlayerView(folderId) {
-            activeFolderId = folderId;
+        function renderGrid() {
+            const grid = document.getElementById('dash-grid');
+            grid.innerHTML = '';
+            
+            if(db.folders.length === 0) document.getElementById('dash-empty').classList.remove('hidden');
+            else document.getElementById('dash-empty').classList.add('hidden');
+
+            db.folders.forEach(f => {
+                const count = f.videos.length;
+                const done = f.videos.filter(v => v.watched).length;
+                const percent = count === 0 ? 0 : Math.round((done/count)*100);
+
+                const el = document.createElement('div');
+                el.className = "group relative bg-surface border border-border hover:border-primary-500/30 rounded-xl p-5 cursor-pointer transition-all hover:-translate-y-1";
+                el.onclick = () => openFolder(f.id);
+                el.innerHTML = `
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-surfaceHighlight flex items-center justify-center text-zinc-400 group-hover:text-primary-400 group-hover:bg-primary-500/10 transition-colors">
+                            <i data-lucide="folder" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] font-mono bg-surfaceHighlight border border-border px-2 py-1 rounded-md text-zinc-500">${done}/${count}</span>
+                    </div>
+                    <h3 class="font-bold text-zinc-200 group-hover:text-white truncate mb-4">${escapeHtml(f.name)}</h3>
+                    <div class="w-full bg-surfaceHighlight h-1 rounded-full overflow-hidden">
+                        <div class="bg-primary-500 h-full rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                    </div>
+                `;
+                grid.appendChild(el);
+            });
+            lucide.createIcons();
+        }
+
+        function openFolder(id) {
+            activeFolderId = id;
             document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-player').classList.remove('hidden');
-            
-            // Update Nav State
-            document.getElementById('nav-dash').classList.replace('text-white', 'text-zinc-400');
-            document.getElementById('nav-dash').classList.replace('bg-surface', 'bg-transparent');
-            document.getElementById('nav-dash').classList.replace('border-border', 'border-transparent');
-
             renderSidebar();
             renderPlaylist();
             
-            // Load logic
-            const f = getFolder(folderId);
-            if(f && f.videos.length > 0 && !activeVideoId) {
-                loadVideo(null); // Reset player
-            } else if (activeVideoId) {
-                // Verify active video is in this folder
-                const v = f.videos.find(x => x.id === activeVideoId);
-                if(v) loadVideo(activeVideoId);
+            // Auto-load logic
+            if(!activeVideoId) {
+                const f = getFolder(id);
+                if(f.videos.length > 0) loadVideo(f.videos[0].id);
                 else loadVideo(null);
-            } else {
-                loadVideo(null);
             }
-            
-            // Mobile menu close
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('mobile-overlay').classList.add('hidden');
         }
 
-        // --- RENDERERS ---
+        function renderPlaylist() {
+            const list = document.getElementById('playlist-container');
+            list.innerHTML = '';
+            const f = getFolder(activeFolderId);
+            if(!f) return;
+
+            const query = document.getElementById('playlist-search').value.toLowerCase();
+            const videos = f.videos.filter(v => v.title.toLowerCase().includes(query));
+            
+            // Update stats
+            const done = f.videos.filter(v => v.watched).length;
+            document.getElementById('playlist-stats').innerText = `${done}/${f.videos.length} Completed`;
+
+            videos.forEach((v, idx) => {
+                const isActive = v.id === activeVideoId;
+                const el = document.createElement('div');
+                el.draggable = true;
+                el.ondragstart = (e) => dragStart(e, idx);
+                el.ondragover = dragOver;
+                el.ondrop = (e) => drop(e, idx);
+                
+                el.className = `p-3 rounded-lg cursor-pointer border flex gap-3 transition-all ${isActive ? 'bg-primary-500/10 border-primary-500/30' : 'bg-surface border-transparent hover:border-border'}`;
+                el.onclick = (e) => {
+                    if(!e.target.closest('.no-trigger')) loadVideo(v.id);
+                };
+
+                el.innerHTML = `
+                    <div class="no-trigger checkbox-wrapper pt-1">
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="hidden" ${v.watched ? 'checked' : ''} onchange="toggleWatched('${v.id}')">
+                            <div class="w-4 h-4 rounded border border-zinc-600 hover:border-zinc-400 bg-transparent flex items-center justify-center transition-colors">
+                                <svg class="w-2.5 h-2.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-xs font-medium ${isActive ? 'text-primary-200' : 'text-zinc-300'} truncate mb-1">${escapeHtml(v.title)}</h4>
+                        <div class="flex items-center gap-2">
+                             <span class="text-[9px] px-1.5 py-0.5 rounded border border-border text-zinc-500 bg-background">${v.tag}</span>
+                             ${isActive ? '<span class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse"></span>' : ''}
+                        </div>
+                    </div>
+                    <div class="no-trigger opacity-0 group-hover:opacity-100 transition-opacity">
+                         <button onclick="deleteVideo('${v.id}')" class="text-zinc-600 hover:text-red-400"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                `;
+                list.appendChild(el);
+            });
+            lucide.createIcons();
+        }
+
         function renderSidebar() {
             const list = document.getElementById('sidebar-list');
             list.innerHTML = '';
@@ -573,238 +713,136 @@
             db.folders.forEach(f => {
                 const isActive = f.id === activeFolderId;
                 const el = document.createElement('div');
-                el.className = `flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-all mb-1 group relative overflow-hidden
-                    ${isActive ? 'bg-surface text-primary-400 border border-border' : 'text-zinc-500 hover:text-zinc-300 hover:bg-surface/50 border border-transparent'}`;
-                
-                // Drag Logic
-                el.draggable = true;
-                el.ondragstart = (e) => dragStart(e, 'folder', f.id);
-                el.ondragover = dragOver;
-                el.ondrop = (e) => drop(e, 'folder', f.id);
-
-                el.onclick = () => renderPlayerView(f.id);
+                el.className = `px-3 py-2 rounded-lg cursor-pointer text-xs font-medium flex items-center gap-2 mb-0.5 transition-colors ${isActive ? 'text-white bg-surfaceHighlight border-r-2 border-primary-500' : 'text-zinc-500 hover:text-zinc-300 hover:bg-surfaceHighlight/50'}`;
+                el.onclick = () => openFolder(f.id);
                 el.innerHTML = `
-                    <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-4 h-4 z-10"></i>
-                    <span class="truncate flex-1 z-10">${escapeHtml(f.name)}</span>
-                    ${f.videos.length > 0 ? `<span class="text-[9px] bg-background text-zinc-600 px-1.5 py-0.5 rounded-full z-10">${f.videos.length}</span>` : ''}
-                    ${isActive ? '<div class="absolute left-0 top-0 bottom-0 w-0.5 bg-primary-500"></div>' : ''}
+                    <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-3.5 h-3.5"></i>
+                    <span class="truncate flex-1">${escapeHtml(f.name)}</span>
+                    ${f.videos.length > 0 ? `<span class="text-[9px] opacity-50">${f.videos.length}</span>` : ''}
                 `;
                 list.appendChild(el);
             });
             lucide.createIcons();
         }
 
-        function updateDashboardStats() {
-            let total = 0;
-            let watched = 0;
-            const grid = document.getElementById('dash-grid');
-            grid.innerHTML = '';
-
-            if(db.folders.length === 0) {
-                document.getElementById('dash-empty').classList.remove('hidden');
-                document.getElementById('dash-empty').classList.add('flex');
-            } else {
-                document.getElementById('dash-empty').classList.add('hidden');
-                document.getElementById('dash-empty').classList.remove('flex');
-            }
-
-            db.folders.forEach(f => {
-                const count = f.videos.length;
-                const done = f.videos.filter(v => v.watched).length;
-                total += count;
-                watched += done;
-                const percent = count === 0 ? 0 : Math.round((done/count)*100);
-
-                const card = document.createElement('div');
-                card.className = "dash-card glass p-5 rounded-xl cursor-pointer group transition-all duration-300 relative overflow-hidden border border-border/50";
-                card.onclick = () => renderPlayerView(f.id);
-                card.innerHTML = `
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary-500/10 transition-colors"></div>
-                    
-                    <div class="flex justify-between items-start mb-4 relative z-10">
-                        <div class="p-2 bg-surface rounded-lg border border-border group-hover:border-primary-500/30 transition-colors">
-                            <i data-lucide="folder" class="w-5 h-5 text-zinc-400 group-hover:text-primary-400"></i>
-                        </div>
-                        <div class="text-[10px] font-mono text-zinc-500 bg-surface px-2 py-1 rounded border border-border">${done}/${count}</div>
-                    </div>
-                    
-                    <h4 class="font-bold text-zinc-200 truncate group-hover:text-white transition-colors mb-3 relative z-10">${escapeHtml(f.name)}</h4>
-                    
-                    <div class="w-full bg-surfaceHighlight h-1.5 rounded-full overflow-hidden relative z-10">
-                        <div class="bg-primary-500 h-full rounded-full transition-all duration-700" style="width: ${percent}%"></div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-
-            // Global Stats
-            const globalPercent = total === 0 ? 0 : Math.round((watched/total)*100);
-            const offset = 100 - globalPercent;
-            document.getElementById('dash-circle').style.strokeDashoffset = offset;
-            document.getElementById('dash-percent').innerText = `${globalPercent}%`;
-            document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-done').innerText = watched;
-
-            // Resume Button
-            const resumeBtn = document.getElementById('btn-resume');
-            if(db.lastPlayed) {
-                resumeBtn.classList.remove('hidden');
-                resumeBtn.classList.add('flex');
-            } else {
-                resumeBtn.classList.add('hidden');
-            }
+        // --- UTILS ---
+        function uid() { return Math.random().toString(36).substr(2, 9); }
+        function getFolder(id) { return db.folders.find(f => f.id === id); }
+        function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+        function formatTime(s) {
+            const m = Math.floor(s/60);
+            const sc = Math.floor(s%60);
+            return `${m}:${sc<10?'0':''}${sc}`;
         }
-
-        function renderPlaylist() {
-            const list = document.getElementById('playlist-container');
-            list.innerHTML = '';
-            
-            const folder = getActiveFolder();
-            if(!folder) return;
-
-            const query = document.getElementById('playlist-search').value.toLowerCase();
-            const videos = folder.videos.filter(v => v.title.toLowerCase().includes(query));
-
-            // Stats footer
-            const done = folder.videos.filter(v => v.watched).length;
-            document.getElementById('playlist-status').innerText = `${done} of ${folder.videos.length} Completed`;
-
-            if(videos.length === 0) {
-                list.innerHTML = `<div class="p-8 text-center text-zinc-600 text-xs italic">No videos match your search.</div>`;
-                return;
-            }
-
-            videos.forEach((v, idx) => {
-                const isActive = v.id === activeVideoId;
-                const el = document.createElement('div');
-                el.className = `group relative flex gap-3 p-2.5 rounded-lg cursor-pointer border transition-all duration-200 mb-1
-                    ${isActive ? 'bg-surface border-primary-500/30' : 'border-transparent hover:bg-surface/40 hover:border-border'}`;
-                
-                // Click
-                el.onclick = (e) => {
-                    if(e.target.closest('.no-trigger')) return;
-                    loadVideo(v.id);
-                };
-
-                // Drag
-                if(!query) {
-                    el.draggable = true;
-                    el.ondragstart = (e) => dragStart(e, 'video', idx);
-                    el.ondragover = dragOver;
-                    el.ondrop = (e) => drop(e, 'video', idx);
-                }
-
-                // Tag Styling
-                const tagStyles = {
-                    'Lecture': 'text-primary-400 bg-primary-500/10 border-primary-500/20',
-                    'Concept': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-                    'PYQ': 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-                    'Revision': 'text-rose-400 bg-rose-500/10 border-rose-500/20'
-                };
-                const ts = tagStyles[v.tag] || tagStyles['Lecture'];
-
-                el.innerHTML = `
-                    <div class="no-trigger pt-0.5 custom-checkbox">
-                        <label class="cursor-pointer group/check">
-                            <input type="checkbox" class="hidden" ${v.watched ? 'checked' : ''} onchange="toggleWatched('${v.id}')">
-                            <div class="w-4 h-4 rounded border border-zinc-600 bg-black hover:border-zinc-400 transition-colors flex items-center justify-center">
-                                <svg class="w-2.5 h-2.5 text-black hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-                        </label>
-                    </div>
-                    
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-start">
-                            <h4 class="text-xs font-medium ${v.watched ? 'text-zinc-500 line-through' : (isActive ? 'text-primary-200' : 'text-zinc-300')} truncate leading-snug mb-1.5">${escapeHtml(v.title)}</h4>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[9px] px-1.5 py-0.5 rounded border ${ts}">${v.tag}</span>
-                            ${isActive ? '<span class="flex h-1.5 w-1.5 rounded-full bg-primary-500 animate-pulse"></span>' : ''}
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity no-trigger pl-2 border-l border-border/50">
-                        <button onclick="deleteVideo('${v.id}')" class="p-1 hover:text-red-400 text-zinc-600"><i data-lucide="trash" class="w-3 h-3"></i></button>
-                    </div>
-                    
-                    ${!query ? `<div class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing text-zinc-600 p-1"><i data-lucide="grip-vertical" class="w-3 h-3"></i></div>` : ''}
-                `;
-                list.appendChild(el);
-            });
-            lucide.createIcons();
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
-
-        function loadVideo(id) {
-            activeVideoId = id;
-            const wrap = document.getElementById('iframe-wrapper');
-            const titleEl = document.getElementById('player-title');
-            const metaEl = document.getElementById('player-meta');
-
-            if(!id) {
-                wrap.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full text-zinc-700 bg-black">
-                        <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4 shadow-2xl rotate-3">
-                            <i data-lucide="play" class="w-6 h-6 text-zinc-600 ml-1"></i>
-                        </div>
-                        <p class="text-xs font-medium uppercase tracking-widest opacity-60">Ready to Learn</p>
-                    </div>`;
-                titleEl.innerText = "No Video Selected";
-                metaEl.innerText = "Select a lecture from the playlist";
-                lucide.createIcons();
-                renderPlaylist();
-                return;
-            }
-
-            const folder = getActiveFolder();
-            const v = folder.videos.find(x => x.id === id);
-
-            if(v) {
-                wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${v.ytId}?autoplay=1&rel=0&modestbranding=1" class="w-full h-full border-0" allowfullscreen allow="autoplay; accelerometer; encrypted-media; gyroscope; picture-in-picture"></iframe>`;
-                titleEl.innerText = v.title;
-                metaEl.innerText = `${v.tag} • ${folder.name}`;
-                
-                db.lastPlayed = { folderId: activeFolderId, videoId: id };
-                save();
-                renderPlaylist();
-            }
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            sb.classList.toggle('-translate-x-full');
         }
-
+        
         // --- ACTIONS ---
         function toggleWatched(id) {
-            const f = getActiveFolder();
+            const f = getFolder(activeFolderId);
             const v = f.videos.find(x => x.id === id);
-            if(v) {
-                v.watched = !v.watched;
-                save();
-                renderPlaylist();
-            }
-        }
-
-        function resumeLast() {
-            if(db.lastPlayed) {
-                const { folderId, videoId } = db.lastPlayed;
-                if(getFolder(folderId)) {
-                    renderPlayerView(folderId);
-                    loadVideo(videoId);
-                } else toast('Subject not found', 'error');
-            }
-        }
-
-        // --- MODAL LOGIC ---
-        function createFolder() {
-            const name = document.getElementById('inp-folder-name').value.trim();
-            if(!name) return;
-            const fid = uid();
-            db.folders.push({ id: fid, name: name, videos: [] });
+            v.watched = !v.watched;
             save();
-            closeModals();
-            
-            if(document.getElementById('view-dashboard').classList.contains('hidden')) {
-                renderSidebar();
-            } else {
-                renderDashboard();
+            renderPlaylist();
+        }
+        
+        function resumeLast() {
+            if(db.lastPlayed) openFolder(db.lastPlayed.folderId);
+        }
+
+        // --- IMPORT / EXPORT ---
+        function exportData() {
+            const s = JSON.stringify(db);
+            const b = new Blob([s], {type: 'application/json'});
+            const u = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = `studyos-backup-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if(json.folders) {
+                        db = json;
+                        save();
+                        init();
+                        toast('Import Successful');
+                    } else toast('Invalid file format', 'error');
+                } catch(err) { toast('Error parsing file', 'error'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetData() {
+            if(confirm('Delete ALL data?')) {
+                localStorage.removeItem(DB_KEY);
+                location.reload();
             }
-            toast('Subject created');
+        }
+
+        // --- DRAG DROP ---
+        let dragIdx = null;
+        function setupDragDrop() {
+            document.addEventListener('dragend', () => {
+                 document.getElementById('drag-overlay').classList.add('hidden');
+                 renderPlaylist();
+            });
+        }
+        function dragStart(e, idx) {
+            dragIdx = idx;
+            document.getElementById('drag-overlay').classList.remove('hidden');
+        }
+        function dragOver(e) { e.preventDefault(); }
+        function drop(e, targetIdx) {
+            e.preventDefault();
+            const f = getFolder(activeFolderId);
+            const item = f.videos.splice(dragIdx, 1)[0];
+            f.videos.splice(targetIdx, 0, item);
+            save();
+            renderPlaylist();
+        }
+
+        // --- MODALS & FORMS ---
+        function openModal(name) {
+            const m = document.getElementById('modal-' + name);
+            const o = document.getElementById('modal-overlay');
+            o.classList.remove('hidden'); m.classList.remove('hidden');
+            setTimeout(() => { o.classList.remove('opacity-0'); m.classList.remove('opacity-0', 'scale-95'); }, 10);
+            
+            // Reset Inputs
+            if(name === 'video') document.getElementById('inp-video-tag').value = 'Lecture';
+            if(name === 'edit-folder') document.getElementById('inp-edit-name').value = getFolder(activeFolderId).name;
+            updateTagVisuals();
+        }
+        
+        function closeModals() {
+            const o = document.getElementById('modal-overlay');
+            const modals = document.querySelectorAll('[id^="modal-"]:not(#modal-overlay)');
+            o.classList.add('opacity-0');
+            modals.forEach(m => m.classList.add('opacity-0', 'scale-95'));
+            setTimeout(() => { o.classList.add('hidden'); modals.forEach(m => m.classList.add('hidden')); }, 300);
+        }
+
+        function createFolder() {
+            const name = document.getElementById('inp-folder-name').value;
+            if(!name) return;
+            db.folders.push({ id: uid(), name: name, videos: [] });
+            save();
+            renderDashboard();
+            closeModals();
         }
 
         function addVideo() {
@@ -812,201 +850,49 @@
             const title = document.getElementById('inp-video-title').value;
             const tag = document.getElementById('inp-video-tag').value;
             
-            const ytId = extractYouTubeID(url);
-            if(!ytId) { toast('Invalid YouTube URL', 'error'); return; }
-            
-            const folder = getActiveFolder();
+            // Extract YT ID
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            const ytId = (match && match[2].length === 11) ? match[2] : null;
+
+            if(!ytId) { toast('Invalid URL', 'error'); return; }
+
+            const f = getFolder(activeFolderId);
             const vid = uid();
-            folder.videos.push({
-                id: vid,
-                ytId: ytId,
-                title: title || `Lecture ${folder.videos.length + 1}`,
-                tag: tag,
-                watched: false,
-                addedAt: Date.now()
+            f.videos.push({
+                id: vid, ytId: ytId, title: title || `Lecture ${f.videos.length + 1}`,
+                tag: tag, watched: false
             });
             save();
-            closeModals();
             renderPlaylist();
-            toast('Video added to playlist');
-            
-            if(folder.videos.length === 1) loadVideo(vid);
+            closeModals();
+            if(f.videos.length === 1) loadVideo(vid);
         }
 
         function deleteVideo(id) {
-            if(!confirm('Remove this video?')) return;
-            const f = getActiveFolder();
+            if(!confirm('Remove video?')) return;
+            const f = getFolder(activeFolderId);
             f.videos = f.videos.filter(v => v.id !== id);
-            if(activeVideoId === id) loadVideo(null);
             save();
+            if(activeVideoId === id) loadVideo(null);
             renderPlaylist();
         }
 
-        function saveEditFolder() {
-            const f = getActiveFolder();
-            const name = document.getElementById('inp-edit-name').value.trim();
-            if(f && name) {
-                f.name = name;
-                save();
-                closeModals();
-                renderSidebar();
-                // Update meta if playing
-                if(activeVideoId) {
-                    const v = f.videos.find(x => x.id === activeVideoId);
-                    if(v) document.getElementById('player-meta').innerText = `${v.tag} • ${f.name}`;
-                }
-            }
-        }
-
         function deleteCurrentFolder() {
-            if(!confirm('Delete this subject and all its videos? This cannot be undone.')) return;
+            if(!confirm('Delete subject?')) return;
             db.folders = db.folders.filter(f => f.id !== activeFolderId);
             save();
-            closeModals();
             renderDashboard();
-            toast('Subject deleted');
+            closeModals();
         }
 
-        // --- DRAG & DROP ---
-        let dragSrc = null;
-        let dragType = null;
-        let dragId = null;
-
-        function setupDragDrop() {
-            document.addEventListener('dragend', () => {
-                document.querySelectorAll('.drag-over').forEach(e => e.classList.remove('drag-over'));
-                document.querySelectorAll('.dragging-item').forEach(e => e.classList.remove('dragging-item'));
-                document.getElementById('drag-overlay').classList.add('hidden');
-            });
-        }
-
-        function dragStart(e, type, id) {
-            dragSrc = e.target;
-            dragType = type;
-            dragId = id;
-            e.target.classList.add('dragging-item');
-            e.dataTransfer.effectAllowed = 'move';
-            // Overlay iframe to prevent swallowing drop event
-            document.getElementById('drag-overlay').classList.remove('hidden');
-        }
-
-        function dragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            const target = e.target.closest('[draggable]');
-            if(target) target.classList.add('drag-over');
-        }
-
-        function drop(e, type, targetId) {
-            e.stopPropagation();
-            const target = e.target.closest('[draggable]');
-            if(target) target.classList.remove('drag-over');
-            
-            if(dragType !== type) return;
-
-            if(type === 'folder') {
-                const fIdx = db.folders.findIndex(x => x.id === dragId);
-                const tIdx = db.folders.findIndex(x => x.id === targetId);
-                moveItem(db.folders, fIdx, tIdx);
-                renderSidebar();
-                if(!activeFolderId) updateDashboardStats();
-            } else {
-                const f = getActiveFolder();
-                // dragId/targetId are indices for videos
-                moveItem(f.videos, dragId, targetId);
-                renderPlaylist();
-            }
+        function saveEditFolder() {
+            const f = getFolder(activeFolderId);
+            f.name = document.getElementById('inp-edit-name').value;
             save();
-        }
-
-        function moveItem(arr, from, to) {
-            if(from<0 || to<0 || from>=arr.length || to>=arr.length) return;
-            const item = arr.splice(from, 1)[0];
-            arr.splice(to, 0, item);
-        }
-
-        // --- UTILS & UI HELPERS ---
-        function toggleCinemaMode() {
-            isCinema = !isCinema;
-            const body = document.body;
-            const overlay = document.getElementById('cinema-overlay');
-            if(isCinema) {
-                body.classList.add('cinema-mode');
-                overlay.classList.remove('hidden');
-                setTimeout(()=>overlay.classList.remove('opacity-0'), 10);
-            } else {
-                body.classList.remove('cinema-mode');
-                overlay.classList.add('opacity-0');
-                setTimeout(()=>overlay.classList.add('hidden'), 500);
-            }
-        }
-
-        function toggleTheaterMode() {
-            isTheater = !isTheater;
-            const col = document.getElementById('playlist-column');
-            if(isTheater) {
-                col.classList.add('w-0', 'border-0', 'overflow-hidden');
-                col.classList.remove('w-full', 'md:w-80', 'lg:w-96', 'border-l');
-            } else {
-                col.classList.remove('w-0', 'border-0', 'overflow-hidden');
-                col.classList.add('w-full', 'md:w-80', 'lg:w-96', 'border-l');
-            }
-        }
-
-        function toggleFullscreen() {
-            const iframe = document.querySelector('iframe');
-            if(iframe && iframe.requestFullscreen) iframe.requestFullscreen();
-        }
-
-        function toggleMobileSidebar() {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('mobile-overlay');
-            if(sb.classList.contains('-translate-x-full')) {
-                sb.classList.remove('-translate-x-full');
-                ov.classList.remove('hidden');
-            } else {
-                sb.classList.add('-translate-x-full');
-                ov.classList.add('hidden');
-            }
-        }
-
-        // Modals
-        function openModal(name) {
-            const wrap = document.getElementById('modal-wrapper');
-            const m = document.getElementById(`modal-${name}`);
-            
-            // Setup
-            document.querySelectorAll('input').forEach(i => i.value = '');
-            if(name === 'video') {
-                updateTagVisuals(); 
-                document.getElementById('inp-video-tag').value = 'Lecture';
-            }
-            if(name === 'edit-folder') {
-                document.getElementById('inp-edit-name').value = getActiveFolder()?.name || '';
-            }
-
-            wrap.classList.remove('hidden');
-            m.classList.remove('hidden');
-            setTimeout(() => {
-                wrap.classList.remove('opacity-0');
-                m.classList.remove('opacity-0', 'scale-95');
-                m.classList.add('scale-100');
-            }, 10);
-        }
-
-        function closeModals() {
-            const wrap = document.getElementById('modal-wrapper');
-            const modals = document.querySelectorAll('[id^="modal-"]:not(#modal-wrapper)');
-            
-            wrap.classList.add('opacity-0');
-            modals.forEach(m => {
-                m.classList.add('opacity-0', 'scale-95');
-                m.classList.remove('scale-100');
-            });
-            setTimeout(() => {
-                wrap.classList.add('hidden');
-                modals.forEach(m => m.classList.add('hidden'));
-            }, 300);
+            closeModals();
+            renderSidebar();
+            if(activeVideoId) document.getElementById('player-meta').innerText = `${f.videos.find(v=>v.id===activeVideoId).tag} • ${f.name}`;
         }
 
         function setTag(t) {
@@ -1017,68 +903,20 @@
         function updateTagVisuals() {
             const t = document.getElementById('inp-video-tag').value;
             document.querySelectorAll('.tag-btn').forEach(b => {
-                if(b.dataset.tag === t) {
-                    b.className = "tag-btn px-2 py-2 text-xs border rounded-lg text-center transition-colors bg-primary-500/20 text-primary-400 border-primary-500/50";
-                } else {
-                    b.className = "tag-btn px-2 py-2 text-xs border rounded-lg text-center transition-colors text-zinc-500 border-border hover:bg-surface";
-                }
+                if(b.dataset.tag === t) b.className = "tag-btn text-xs border rounded-lg py-2 transition-colors border-primary-500/50 bg-primary-500/10 text-primary-400";
+                else b.className = "tag-btn text-xs border border-border text-zinc-500 rounded-lg py-2 hover:bg-surfaceHighlight transition-colors";
             });
         }
 
-        function parseUrl(inp) {
-            // Optional: Auto fetch title via regex or just leave blank
-        }
-
-        // Toast
         function toast(msg, type='success') {
-            const el = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const txt = document.getElementById('toast-msg');
-            
-            txt.innerText = msg;
-            if(type === 'error') {
-                icon.setAttribute('data-lucide', 'alert-circle');
-                icon.className = "w-4 h-4 text-red-400";
-            } else {
-                icon.setAttribute('data-lucide', 'check-circle');
-                icon.className = "w-4 h-4 text-emerald-400";
-            }
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const i = document.getElementById('toast-icon');
+            if(type === 'error') { i.setAttribute('data-lucide', 'alert-circle'); i.classList.replace('text-emerald-400', 'text-red-400'); }
+            else { i.setAttribute('data-lucide', 'check-circle'); i.classList.replace('text-red-400', 'text-emerald-400'); }
             lucide.createIcons();
-            
-            el.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => el.classList.add('translate-y-20', 'opacity-0'), 3000);
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function exportData() {
-            const s = JSON.stringify(db);
-            const b = new Blob([s], {type: 'application/json'});
-            const u = URL.createObjectURL(b);
-            const a = document.createElement('a');
-            a.href = u;
-            a.download = `jee-backup-${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-        }
-
-        function resetData() {
-            if(confirm('Warning: This will delete ALL data. Continue?')) {
-                localStorage.removeItem(DB_KEY_V4);
-                location.reload();
-            }
-        }
-
-        function setupShortcuts() {
-            document.addEventListener('keydown', (e) => {
-                if(e.target.tagName === 'INPUT') return;
-                if(e.key.toLowerCase() === 'c') toggleCinemaMode();
-                if(e.key.toLowerCase() === 't') toggleTheaterMode();
-                if(e.key.toLowerCase() === 'f') toggleFullscreen();
-            });
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
         window.onload = init;
