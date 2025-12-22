@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEE Main 2026 - Study OS Pro</title>
+    <title>Study OS Pro 2.0</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,24 +23,30 @@
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        sans: ['Outfit', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        background: '#050505',
-                        surface: '#0a0a0a',
-                        surfaceHighlight: '#171717',
-                        border: '#262626',
+                        background: '#030303',
+                        surface: '#0A0A0A',
+                        surfaceGlass: 'rgba(20, 20, 20, 0.7)',
+                        border: 'rgba(255, 255, 255, 0.08)',
                         primary: {
-                            400: '#818cf8',
-                            500: '#6366f1',
-                            600: '#4f46e5',
+                            400: '#a78bfa', // Violet
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            glow: 'rgba(139, 92, 246, 0.5)'
                         }
                     },
-                    zIndex: {
-                        '60': '60',
-                        '70': '70',
-                        '100': '100',
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
                     }
                 }
             }
@@ -49,775 +55,1030 @@
 
     <style>
         /* Base & Scrollbar */
-        body { background-color: #050505; color: #e5e5e5; overflow: hidden; }
+        body { 
+            background-color: #030303; 
+            color: #e5e5e5; 
+            overflow: hidden; 
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(59, 130, 246, 0.03) 0%, transparent 40%);
+        }
         
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #525252; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        /* Range Slider Styling */
+        /* Range Slider */
         input[type=range] {
             -webkit-appearance: none; width: 100%; background: transparent;
         }
         input[type=range]:focus { outline: none; }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px rgba(99,102,241,0.5);
+            -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; 
+            background: #e5e5e5; cursor: pointer; margin-top: -4px; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            transition: transform 0.1s;
         }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 2px; cursor: pointer; background: #404040; border-radius: 1px;
+            width: 100%; height: 4px; cursor: pointer; 
+            background: rgba(255,255,255,0.1); border-radius: 2px;
         }
 
-        /* Cinema Mode Classes */
-        body.cinema-mode #sidebar, 
-        body.cinema-mode header, 
-        body.cinema-mode #right-panel,
-        body.cinema-mode #player-controls {
-            opacity: 0.1; pointer-events: none; transition: opacity 0.5s ease;
+        /* Ambient Glow Effect */
+        .ambient-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110%; height: 110%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            filter: blur(60px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease;
         }
-        body.cinema-mode #cinema-overlay { opacity: 1; pointer-events: auto; }
-        body.cinema-mode #video-container { z-index: 60; box-shadow: 0 0 100px rgba(0,0,0,0.8); }
+        .ambient-active .ambient-glow { opacity: 1; }
 
-        /* Focus Mode Classes (Hides UI completely) */
-        body.focus-mode #sidebar { width: 0; opacity: 0; padding: 0; overflow: hidden; border-right: 0; }
-        body.focus-mode header { height: 0; opacity: 0; overflow: hidden; padding: 0; border-bottom: 0; }
-        body.focus-mode #right-panel { width: 0; opacity: 0; overflow: hidden; border-left: 0; }
+        /* CINEMA MODE - LIGHTS OUT FIX */
+        body.cinema-mode aside,
+        body.cinema-mode #sidebar-playlist,
+        body.cinema-mode #top-bar,
+        body.cinema-mode #controls-dock {
+            opacity: 0.05;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        /* Reveal controls on hover in cinema mode */
+        body.cinema-mode #top-bar:hover,
+        body.cinema-mode #controls-dock:hover {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-        /* Video Filters */
-        .filter-invert { filter: invert(1) hue-rotate(180deg); }
-        .filter-contrast { filter: contrast(1.2) brightness(1.1); }
+        /* Ensure video container is NEVER dimmed */
+        body.cinema-mode #player-stage {
+            opacity: 1 !important;
+            filter: none !important;
+        }
+
+        /* Mini Player Transition Classes */
+        #video-wrapper { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        .mode-mini {
+            position: fixed !important;
+            bottom: 24px !important;
+            right: 24px !important;
+            width: 320px !important;
+            height: 180px !important;
+            z-index: 100 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+        }
+        
+        .mode-mini:hover .mini-overlay { opacity: 1; }
+
+        /* Glass Cards */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        }
+
+        /* Utility */
+        .text-glow { text-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
     </style>
 </head>
-<body class="h-screen flex flex-col font-sans selection:bg-primary-500/30 selection:text-white">
+<body class="h-screen flex text-sm selection:bg-primary-500/30 selection:text-white">
 
-    <!-- Cinema Overlay -->
-    <div id="cinema-overlay" class="fixed inset-0 bg-black/95 z-50 opacity-0 pointer-events-none transition-opacity duration-500"></div>
+    <!-- YouTube API Mount (Do not touch) -->
+    <div id="yt-api-mount"></div>
 
-    <!-- YouTube API (Loaded dynamically to prevent errors) -->
-    <div id="yt-api-placeholder"></div>
-
-    <!-- Header -->
-    <header class="h-14 border-b border-border bg-background flex items-center justify-between px-4 z-40 flex-shrink-0 transition-all duration-300">
-        <div class="flex items-center gap-4">
-            <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 text-zinc-400 hover:text-white rounded-lg">
-                <i data-lucide="menu" class="w-5 h-5"></i>
-            </button>
-            <div class="flex items-center gap-3 cursor-pointer group" onclick="renderDashboard()">
-                <div class="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
-                    <i data-lucide="zap" class="w-4 h-4 text-white fill-current"></i>
-                </div>
-                <div>
-                    <h1 class="text-sm font-bold text-white tracking-tight">STUDY<span class="text-primary-500">OS</span></h1>
-                </div>
+    <!-- SIDEBAR -->
+    <aside class="w-20 lg:w-64 flex-shrink-0 flex flex-col border-r border-border bg-black/40 backdrop-blur-xl z-50 transition-all duration-300 group">
+        <!-- Logo -->
+        <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-border/50">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20 flex-shrink-0">
+                <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="hidden lg:block ml-3">
+                <h1 class="font-bold text-lg tracking-tight text-white">Study<span class="text-primary-400">OS</span></h1>
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
-            <!-- Hidden Import Input -->
-            <input type="file" id="import-input" accept=".json" class="hidden" onchange="processImport(this)">
-            
-            <button onclick="document.getElementById('import-input').click()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors border border-transparent hover:border-border">
-                <i data-lucide="upload" class="w-3.5 h-3.5"></i> 
-                <span class="hidden sm:inline">Import</span>
+        <!-- Nav -->
+        <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-1 custom-scrollbar">
+            <button onclick="router.navigate('dashboard')" id="nav-dash" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-zinc-400 hover:text-white hover:bg-white/5">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                <span class="hidden lg:block font-medium">Dashboard</span>
             </button>
-            <button onclick="exportData()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors border border-transparent hover:border-border">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">Backup</span>
+            
+            <div class="hidden lg:block pt-6 pb-2 px-3 text-xs font-bold text-zinc-600 uppercase tracking-wider">
+                Library
+            </div>
+
+            <div id="sidebar-folders" class="space-y-1">
+                <!-- Folder List injected here -->
+            </div>
+            
+            <button onclick="ui.openModal('folder')" class="mt-2 w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-dashed border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 transition-all">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                <span class="hidden lg:block font-medium">New Folder</span>
+            </button>
+        </nav>
+
+        <!-- Footer Actions -->
+        <div class="p-4 border-t border-border/50 flex flex-col gap-2">
+            <button onclick="dataManager.export()" class="flex items-center justify-center lg:justify-start gap-3 p-2 text-zinc-500 hover:text-white transition-colors rounded-lg hover:bg-white/5" title="Backup Data">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span class="hidden lg:block text-xs font-medium">Backup Data</span>
+            </button>
+            <input type="file" id="import-input" accept=".json" class="hidden" onchange="dataManager.import(this)">
+            <button onclick="document.getElementById('import-input').click()" class="flex items-center justify-center lg:justify-start gap-3 p-2 text-zinc-500 hover:text-white transition-colors rounded-lg hover:bg-white/5" title="Import Data">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span class="hidden lg:block text-xs font-medium">Import Data</span>
+            </button>
+             <button onclick="ui.openModal('shortcuts')" class="flex items-center justify-center lg:justify-start gap-3 p-2 text-zinc-500 hover:text-white transition-colors rounded-lg hover:bg-white/5" title="Shortcuts">
+                <i data-lucide="keyboard" class="w-4 h-4"></i>
+                <span class="hidden lg:block text-xs font-medium">Shortcuts</span>
             </button>
         </div>
-    </header>
+    </aside>
 
-    <div class="flex flex-1 overflow-hidden relative">
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 relative flex flex-col min-w-0 bg-background/50">
         
-        <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-surface border-r border-border flex flex-col flex-shrink-0 z-30 transition-all duration-300 absolute lg:static h-full transform -translate-x-full lg:translate-x-0">
-            <div class="p-3">
-                <button onclick="renderDashboard()" id="nav-dash" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-colors text-white bg-surfaceHighlight border border-border">
-                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                    DASHBOARD
-                </button>
-            </div>
-            <div class="px-4 pt-2 pb-2 flex items-center justify-between group">
-                <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider group-hover:text-zinc-300 transition-colors">FOLDERS</span>
-                <button onclick="openModal('folder')" class="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-surfaceHighlight rounded" title="New Folder">
-                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                </button>
-            </div>
-            <div id="sidebar-list" class="flex-1 overflow-y-auto px-2 pb-4 space-y-1 custom-scrollbar">
-                <!-- List -->
-            </div>
-        </aside>
-
-        <!-- Main Content Area (Flex container) -->
-        <div class="flex-1 flex flex-col relative min-w-0 bg-background z-0">
-            
-            <!-- VIEW: DASHBOARD -->
-            <main id="view-dashboard" class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10">
-                <div class="max-w-7xl mx-auto space-y-8 animate-slide-up">
-                    
-                    <!-- Continue Watching Hero -->
-                    <div id="hero-section" class="hidden relative group rounded-2xl overflow-hidden border border-border bg-surface">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-900/20 to-transparent"></div>
-                        <div class="relative p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary-500 text-white">Continue</span>
-                                </div>
-                                <h2 id="hero-title" class="text-2xl font-bold text-white mb-1">Folder Name</h2>
-                                <p id="hero-sub" class="text-zinc-400 text-sm font-mono">Lecture Title</p>
-                            </div>
-                            <button onclick="resumeLast()" class="px-6 py-3 bg-white text-black hover:bg-zinc-200 rounded-lg text-sm font-bold shadow-xl shadow-white/5 transition-transform hover:scale-105 flex items-center gap-2">
-                                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Resume
-                            </button>
-                        </div>
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="absolute inset-0 overflow-y-auto z-10 p-6 lg:p-10 scroll-smooth">
+            <div class="max-w-7xl mx-auto pb-20">
+                <!-- Header -->
+                <header class="flex justify-between items-end mb-8 animate-slide-up">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+                        <p class="text-zinc-400">Track your progress and stay consistent.</p>
                     </div>
+                    <div id="global-stats" class="hidden md:flex gap-6">
+                        <!-- Stats injected -->
+                    </div>
+                </header>
 
-                    <!-- Grid -->
-                    <div id="dash-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+                <!-- Continue Watching Hero -->
+                <div id="hero-section" class="hidden mb-12 relative group rounded-2xl overflow-hidden border border-white/10 glass-card">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary-900/40 via-transparent to-transparent opacity-60"></div>
+                    <div class="absolute -right-20 -top-20 w-64 h-64 bg-primary-500/20 rounded-full blur-3xl group-hover:bg-primary-500/30 transition-all duration-700"></div>
                     
-                    <!-- Empty State -->
-                    <div id="dash-empty" class="hidden flex-col items-center justify-center py-20 border-2 border-dashed border-border rounded-xl">
-                        <div class="w-12 h-12 bg-surfaceHighlight rounded-full flex items-center justify-center mb-4 text-zinc-600">
-                            <i data-lucide="folder" class="w-6 h-6"></i>
+                    <div class="relative p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div class="z-10">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-primary-300">Continue Learning</span>
+                            </div>
+                            <h2 id="hero-title" class="text-2xl lg:text-3xl font-bold text-white mb-2">Folder Name</h2>
+                            <p id="hero-sub" class="text-zinc-300 font-mono text-sm opacity-80">Lecture Title</p>
                         </div>
-                        <p class="text-zinc-400 text-sm">No folders yet. Create one or import data.</p>
+                        <button onclick="app.resumeLast()" class="z-10 px-8 py-4 bg-white text-black hover:bg-primary-50 rounded-xl font-bold shadow-xl shadow-white/5 transition-all hover:scale-105 flex items-center gap-3">
+                            <i data-lucide="play" class="w-5 h-5 fill-current"></i> Resume
+                        </button>
                     </div>
                 </div>
-            </main>
 
-            <!-- VIEW: PLAYER (Initially Hidden) -->
-            <main id="view-player" class="hidden flex-1 flex flex-col h-full absolute inset-0 bg-black z-20">
+                <!-- Grid -->
+                <div id="dash-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
                 
-                <div class="flex-1 flex flex-row min-h-0">
-                    <!-- Video Stage -->
-                    <div class="flex-1 flex flex-col relative bg-black min-w-0">
-                        
-                        <!-- Video Container -->
-                        <div id="video-container" class="flex-1 relative bg-black flex items-center justify-center group overflow-hidden">
-                            <div id="yt-player-mount" class="w-full h-full relative z-10"></div>
-                            <!-- Drag Drop Overlay -->
-                            <div id="drag-overlay" class="absolute inset-0 z-50 bg-primary-500/10 hidden backdrop-blur-sm border-4 border-dashed border-primary-500/50 m-6 rounded-2xl flex items-center justify-center text-primary-200 font-bold text-xl">
-                                Drop Video Here
-                            </div>
-                        </div>
+                <!-- Empty State -->
+                <div id="dash-empty" class="hidden flex flex-col items-center justify-center py-32 border border-dashed border-white/10 rounded-2xl bg-white/5">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="folder-plus" class="w-8 h-8 text-zinc-500"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-white mb-1">No collections yet</h3>
+                    <p class="text-zinc-500 text-sm">Create a folder to start organizing your lectures.</p>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Controls Deck -->
-                        <div id="player-controls" class="bg-surface border-t border-border flex flex-col z-20 flex-shrink-0 transition-all duration-300">
-                            
-                            <!-- Top Bar: Title & View Modes -->
-                            <div class="flex items-center justify-between px-4 py-2 border-b border-border/50">
-                                <div class="flex items-center gap-3 min-w-0 mr-4">
-                                    <button onclick="renderDashboard()" class="p-1.5 hover:bg-surfaceHighlight rounded-lg text-zinc-400 hover:text-white transition-colors" title="Back to Dashboard">
-                                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                                    </button>
-                                    <div class="min-w-0">
-                                        <h2 id="player-title" class="text-xs font-bold text-white truncate">Select Video</h2>
-                                        <p id="player-meta" class="text-[10px] text-zinc-500 truncate font-mono">--</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-1 bg-surfaceHighlight/50 rounded-lg p-1 border border-border">
-                                    <button onclick="toggleInvert()" id="btn-invert" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight" title="Invert Colors">
-                                        <i data-lucide="contrast" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="toggleCinema()" id="btn-cinema" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight" title="Cinema Mode">
-                                        <i data-lucide="moon" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="toggleTheater()" id="btn-theater" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight" title="Theater Mode">
-                                        <i data-lucide="panel-right-close" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="toggleFocus()" id="btn-focus" class="p-1.5 rounded text-zinc-400 hover:text-primary-400 hover:bg-surfaceHighlight" title="Focus Mode">
-                                        <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                </div>
-                            </div>
+        <!-- PLAYER VIEW CONTAINER -->
+        <div id="view-player" class="absolute inset-0 z-20 flex hidden bg-background">
+            <!-- Sidebar Playlist -->
+            <div id="sidebar-playlist" class="w-80 border-r border-border bg-surface flex flex-col order-1 lg:order-2 z-20 shadow-2xl transition-opacity duration-500">
+                <div class="p-4 border-b border-border">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-zinc-500"></i>
+                        <input type="text" id="playlist-search" oninput="ui.renderPlaylist()" placeholder="Filter lectures..." 
+                            class="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary-500/50 focus:bg-white/10 transition-all">
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-primary-500/5 border-b border-primary-500/10 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span id="playlist-folder-name" class="font-bold text-primary-200 text-xs uppercase tracking-wide">Physics</span>
+                    </div>
+                    <button onclick="ui.openModal('video')" class="p-1.5 text-primary-300 hover:text-white hover:bg-primary-500/20 rounded-md transition-colors" title="Add Video">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
 
-                            <!-- Bottom Bar: Slider & Repeater -->
-                            <div class="flex items-center justify-between px-4 py-3 bg-surfaceHighlight/10 gap-6 overflow-x-auto">
-                                
-                                <!-- Speed Slider -->
-                                <div class="flex items-center gap-3 flex-1 max-w-xs">
-                                    <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider whitespace-nowrap">Speed <span id="speed-val" class="text-white ml-1 font-mono">1.0x</span></div>
-                                    <input type="range" min="0.5" max="4.0" step="0.1" value="1.0" oninput="setSpeed(this.value)" class="flex-1">
-                                </div>
+                <div id="playlist-container" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
+                
+                <div class="p-3 border-t border-border bg-surfaceGlass flex justify-between items-center text-xs text-zinc-500">
+                     <span id="playlist-stats">0/0 Watched</span>
+                     <button onclick="ui.openModal('edit-folder')" class="hover:text-white"><i data-lucide="settings-2" class="w-3.5 h-3.5"></i></button>
+                </div>
+            </div>
 
-                                <!-- Repeater -->
-                                <div class="flex items-center gap-2 border-l border-border pl-4">
-                                    <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Loop</span>
-                                    <div class="flex items-center bg-surface border border-border rounded overflow-hidden">
-                                        <button onclick="setLoopPoint('A')" id="btn-loop-a" class="px-3 py-1 text-[10px] font-mono hover:bg-primary-500/20 hover:text-primary-400 transition-colors border-r border-border text-zinc-400">A</button>
-                                        <button onclick="setLoopPoint('B')" id="btn-loop-b" class="px-3 py-1 text-[10px] font-mono hover:bg-primary-500/20 hover:text-primary-400 transition-colors border-r border-border text-zinc-400">B</button>
-                                        <button onclick="toggleLoop()" id="btn-loop-toggle" class="px-2 py-1 text-zinc-500 hover:text-white hover:bg-surfaceHighlight transition-colors">
-                                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
+            <!-- Main Stage -->
+            <div class="flex-1 relative flex flex-col min-w-0 bg-black order-2 lg:order-1">
+                <!-- Top Bar -->
+                <div id="top-bar" class="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/80 to-transparent z-30 flex items-center justify-between px-6 transition-opacity duration-500">
+                    <div class="flex items-center gap-4">
+                        <button onclick="router.minimizePlayer()" class="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all group">
+                            <i data-lucide="chevron-down" class="w-5 h-5 group-hover:translate-y-0.5 transition-transform"></i>
+                        </button>
+                        <div>
+                            <h2 id="player-title" class="text-sm font-bold text-white shadow-black drop-shadow-md">Select Video</h2>
                         </div>
                     </div>
-
-                    <!-- Right Panel (Playlist) -->
-                    <div id="right-panel" class="w-80 bg-surface border-l border-border flex flex-col flex-shrink-0 transition-all duration-300">
-                        <div class="p-3 border-b border-border flex gap-2">
-                            <div class="relative flex-1">
-                                <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-zinc-500"></i>
-                                <input type="text" id="playlist-search" oninput="renderPlaylist()" placeholder="Search..." class="w-full bg-background border border-border rounded-md pl-8 py-2 text-xs text-white focus:outline-none focus:border-primary-500">
-                            </div>
-                            <button onclick="openModal('video')" class="p-2 bg-primary-600 hover:bg-primary-500 text-white rounded-md shadow-lg shadow-primary-500/20">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                        <div id="playlist-container" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
-                        <div class="p-2 border-t border-border bg-surface flex justify-between items-center px-4">
-                            <span id="playlist-stats" class="text-[10px] text-zinc-500">0/0 Watched</span>
-                            <button onclick="openModal('edit-folder')" class="text-zinc-500 hover:text-white"><i data-lucide="settings-2" class="w-3.5 h-3.5"></i></button>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="ui.toggleAmbient()" id="btn-ambient" class="p-2 text-zinc-400 hover:text-primary-400 transition-colors" title="Ambient Mode"><i data-lucide="lightbulb" class="w-5 h-5"></i></button>
+                        <button onclick="ui.toggleCinema()" id="btn-cinema" class="p-2 text-zinc-400 hover:text-white transition-colors" title="Cinema Mode (Lights Out)"><i data-lucide="monitor" class="w-5 h-5"></i></button>
                     </div>
                 </div>
 
-            </main>
+                <!-- Video Area Placeholder (The iframe wrapper moves here) -->
+                <div id="player-stage" class="flex-1 flex items-center justify-center relative overflow-hidden transition-none">
+                    <!-- Ambient Glow Background -->
+                    <div class="ambient-glow"></div>
+                </div>
+
+                <!-- Controls Dock -->
+                <div id="controls-dock" class="h-20 bg-surface border-t border-border flex items-center px-6 gap-6 z-30 relative transition-opacity duration-500">
+                     <!-- Playback Controls -->
+                     <div class="flex items-center gap-4">
+                        <button onclick="player.togglePlay()" class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform">
+                            <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+                        </button>
+                        <button onclick="player.seek(-10)" class="text-zinc-400 hover:text-white"><i data-lucide="rotate-ccw" class="w-5 h-5"></i></button>
+                        <button onclick="player.seek(10)" class="text-zinc-400 hover:text-white"><i data-lucide="rotate-cw" class="w-5 h-5"></i></button>
+                     </div>
+
+                     <!-- Speed & Loop -->
+                     <div class="flex-1 flex items-center gap-6 justify-center">
+                        <div class="flex flex-col w-32 gap-1 group">
+                            <div class="flex justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                <span>Speed</span>
+                                <span id="speed-val" class="text-primary-400">1.0x</span>
+                            </div>
+                            <input type="range" min="0.5" max="3.0" step="0.1" value="1.0" oninput="player.setSpeed(this.value)">
+                        </div>
+
+                        <div class="h-8 w-px bg-white/10"></div>
+
+                        <div class="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/5">
+                            <button onclick="player.setLoop('A')" id="btn-loop-a" class="px-3 py-1 text-xs font-mono rounded text-zinc-400 hover:text-white hover:bg-white/10 transition-colors">A</button>
+                            <button onclick="player.setLoop('B')" id="btn-loop-b" class="px-3 py-1 text-xs font-mono rounded text-zinc-400 hover:text-white hover:bg-white/10 transition-colors">B</button>
+                            <button onclick="player.toggleLoop()" id="btn-loop-toggle" class="p-1 rounded text-zinc-500 hover:text-white hover:bg-white/10 transition-colors"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FLOATING VIDEO WRAPPER (The Magic Component) -->
+    <!-- This element holds the YouTube Iframe and moves between #player-stage and body based on mode -->
+    <div id="video-wrapper" class="w-full h-full relative z-40 bg-transparent group overflow-hidden">
+        <div id="yt-player-mount" class="w-full h-full"></div>
+        
+        <!-- Mini Player Overlay (Only visible in mini mode) -->
+        <div class="mini-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-sm cursor-pointer" onclick="router.restorePlayer()">
+            <i data-lucide="maximize-2" class="w-8 h-8 text-white"></i>
+            <span class="text-xs font-bold text-white uppercase tracking-wider">Expand</span>
+            <!-- Mini Controls -->
+            <div class="flex gap-4 mt-2" onclick="event.stopPropagation()">
+                <button onclick="player.togglePlay()" class="p-2 bg-white/10 rounded-full hover:bg-white/20 text-white"><i data-lucide="play" class="w-4 h-4 fill-current"></i></button>
+                <button onclick="router.closeMiniPlayer()" class="p-2 bg-red-500/20 rounded-full hover:bg-red-500 text-red-200 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- MODALS -->
     <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden opacity-0 transition-opacity flex items-center justify-center p-4">
         
         <!-- Add Folder -->
-        <div id="modal-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-1">New Folder</h3>
-            <p class="text-xs text-zinc-500 mb-5">Create a folder to organize lectures.</p>
-            <input type="text" id="inp-folder-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700 mb-4" placeholder="e.g. Physics - Optics">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white">Cancel</button>
-                <button onclick="createFolder()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium">Create</button>
+        <div id="modal-folder" class="glass-panel w-full max-w-sm rounded-2xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden border border-white/10">
+            <h3 class="text-xl font-bold text-white mb-1">Create Collection</h3>
+            <p class="text-sm text-zinc-500 mb-6">Organize your lectures into a new folder.</p>
+            <input type="text" id="inp-folder-name" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700 mb-6 transition-colors" placeholder="e.g. Calculus II">
+            <div class="flex justify-end gap-3">
+                <button onclick="ui.closeModals()" class="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white">Cancel</button>
+                <button onclick="actions.createFolder()" class="px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 transition-all hover:scale-105">Create</button>
             </div>
         </div>
 
         <!-- Add Video -->
-        <div id="modal-video" class="bg-surface border border-border w-full max-w-md rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-1">Add Lecture</h3>
-            <p class="text-xs text-zinc-500 mb-5">Paste a YouTube link.</p>
+        <div id="modal-video" class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+            <h3 class="text-xl font-bold text-white mb-6">Add Lecture</h3>
             <div class="space-y-4">
-                <input type="text" id="inp-video-url" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none" placeholder="https://youtu.be/...">
-                <input type="text" id="inp-video-title" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none" placeholder="Title (Optional)">
+                <div class="relative">
+                     <i data-lucide="link" class="absolute left-3 top-3.5 w-4 h-4 text-zinc-500"></i>
+                     <input type="text" id="inp-video-url" class="w-full bg-black/50 border border-white/10 rounded-xl pl-10 p-3 text-sm text-white focus:border-primary-500 focus:outline-none transition-colors" placeholder="Paste YouTube URL">
+                </div>
+                <input type="text" id="inp-video-title" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-primary-500 focus:outline-none transition-colors" placeholder="Video Title (Optional)">
+                
                 <div>
-                    <label class="text-[10px] font-bold text-zinc-500 mb-2 block">Tag</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="setTag('Lecture')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="Lecture">Lecture</button>
-                        <button onclick="setTag('Concept')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="Concept">Concept</button>
-                        <button onclick="setTag('PYQ')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="PYQ">PYQ</button>
-                        <button onclick="setTag('Revision')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="Revision">Revision</button>
+                    <label class="text-[10px] font-bold text-zinc-500 mb-3 block uppercase tracking-wider">Select Category</label>
+                    <div class="grid grid-cols-4 gap-2" id="tag-selector">
+                        <!-- Tags generated by JS -->
                     </div>
                     <input type="hidden" id="inp-video-tag" value="Lecture">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white">Cancel</button>
-                    <button onclick="addVideo()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium">Add Video</button>
+                
+                <div class="flex justify-end gap-3 pt-4">
+                    <button onclick="ui.closeModals()" class="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white">Cancel</button>
+                    <button onclick="actions.addVideo()" class="px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 transition-all hover:scale-105">Add Video</button>
                 </div>
             </div>
         </div>
-
-        <!-- Edit Folder -->
-        <div id="modal-edit-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-4">Manage Folder</h3>
-            <input type="text" id="inp-edit-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none mb-4">
-            <button onclick="deleteCurrentFolder()" class="w-full py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg border border-red-500/20 flex items-center justify-center gap-2 mb-2">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Folder
-            </button>
-            <div class="flex justify-end gap-2 pt-2 border-t border-border">
-                <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white">Cancel</button>
-                <button onclick="saveEditFolder()" class="px-4 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg text-xs font-semibold">Save</button>
+        
+        <!-- Shortcuts Info -->
+        <div id="modal-shortcuts" class="glass-panel w-full max-w-sm rounded-2xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="keyboard" class="w-5 h-5 text-primary-400"></i> Keyboard Shortcuts</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-zinc-400">Play / Pause</span> <span class="font-mono text-white bg-white/10 px-2 rounded">Space</span> or <span class="font-mono text-white bg-white/10 px-2 rounded">K</span></div>
+                <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-zinc-400">Rewind / Forward</span> <span class="font-mono text-white bg-white/10 px-2 rounded">J</span> / <span class="font-mono text-white bg-white/10 px-2 rounded">L</span></div>
+                <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-zinc-400">Ambient Mode</span> <span class="font-mono text-white bg-white/10 px-2 rounded">A</span></div>
+                <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-zinc-400">Mini Player</span> <span class="font-mono text-white bg-white/10 px-2 rounded">Esc</span></div>
+                <div class="flex justify-between"><span class="text-zinc-400">Mute</span> <span class="font-mono text-white bg-white/10 px-2 rounded">M</span></div>
+            </div>
+             <div class="flex justify-end pt-6">
+                <button onclick="ui.closeModals()" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm">Got it</button>
             </div>
         </div>
+        
+         <!-- Edit Folder -->
+        <div id="modal-edit-folder" class="glass-panel w-full max-w-sm rounded-2xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+             <h3 class="text-lg font-bold text-white mb-4">Folder Settings</h3>
+             <input type="text" id="inp-edit-name" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-primary-500 focus:outline-none mb-4">
+             <button onclick="actions.deleteCurrentFolder()" class="w-full py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center gap-2 mb-2 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Entire Collection
+            </button>
+            <div class="flex justify-end gap-3 pt-4 border-t border-white/5">
+                <button onclick="ui.closeModals()" class="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white">Cancel</button>
+                <button onclick="actions.saveEditFolder()" class="px-6 py-2 bg-white text-black hover:bg-zinc-200 rounded-xl text-sm font-bold">Save Changes</button>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 z-[110] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
-        <div class="bg-surface border border-border text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3">
-            <i id="toast-icon" data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
-            <span id="toast-msg" class="text-xs font-medium">Notification</span>
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[110] transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+        <div class="bg-surface/90 backdrop-blur-xl border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3">
+            <i id="toast-icon" data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+            <span id="toast-msg" class="text-sm font-medium tracking-wide">Action Successful</span>
         </div>
     </div>
 
-    <!-- Javascript -->
     <script>
-        // --- DATA & STATE ---
-        const DB_KEY = 'jee_os_v4';
-        let db = { folders: [], lastPlayed: null };
-        let activeFolderId = null;
-        let activeVideoId = null;
+        // --- CONSTANTS & STATE ---
+        const DB_KEY = 'jee_os_v4'; // Keeping the same key to preserve data
         
-        let player = null;
-        let ytApiReady = false;
-        
-        // Loop State
-        let loopStart = null;
-        let loopEnd = null;
-        let isLooping = false;
-        let loopInterval = null;
+        const state = {
+            db: { folders: [], lastPlayed: null },
+            activeFolderId: null,
+            activeVideoId: null,
+            ytApiReady: false,
+            playerObj: null,
+            loop: { start: null, end: null, active: false, interval: null },
+            miniMode: false,
+            ambientMode: false
+        };
 
-        // --- INIT ---
-        function init() {
-            const saved = localStorage.getItem(DB_KEY);
-            if(saved) {
-                try { db = JSON.parse(saved); } catch(e) { console.error(e); }
-            } else {
-                const fid = uid();
-                db = { folders: [{id: fid, name: 'Physics - Mechanics', videos: []}], lastPlayed: null };
-                save();
-            }
+        const TAGS = ['Lecture', 'Concept', 'PYQ', 'Revision'];
 
-            renderSidebar();
-            renderDashboard();
-            lucide.createIcons();
-            setupDragDrop();
+        // --- CORE MODULES ---
 
-            // Load Youtube API Robustly
-            if (!window.YT) {
-                const tag = document.createElement('script');
-                tag.src = "https://www.youtube.com/iframe_api";
-                const firstScriptTag = document.getElementsByTagName('script')[0];
-                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            }
-        }
-
-        window.onYouTubeIframeAPIReady = function() {
-            ytApiReady = true;
-        }
-
-        // --- CORE FUNCTIONS ---
-        function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-        function uid() { return Math.random().toString(36).substr(2, 9); }
-        function getFolder(id) { return db.folders.find(f => f.id === id); }
-
-        function renderDashboard() {
-            // Layout Swap
-            document.getElementById('view-dashboard').classList.remove('hidden');
-            document.getElementById('view-player').classList.add('hidden');
-            activeFolderId = null; // Clear active context
-            
-            // Render Grid
-            const grid = document.getElementById('dash-grid');
-            grid.innerHTML = '';
-            
-            if(db.folders.length === 0) document.getElementById('dash-empty').classList.remove('hidden');
-            else document.getElementById('dash-empty').classList.add('hidden');
-
-            // Hero Section Logic
-            const hero = document.getElementById('hero-section');
-            if(db.lastPlayed) {
-                const f = getFolder(db.lastPlayed.folderId);
-                const v = f ? f.videos.find(x => x.id === db.lastPlayed.videoId) : null;
-                if(f && v) {
-                    hero.classList.remove('hidden');
-                    document.getElementById('hero-title').innerText = f.name;
-                    document.getElementById('hero-sub').innerText = v.title;
-                } else hero.classList.add('hidden');
-            } else hero.classList.add('hidden');
-
-            db.folders.forEach(f => {
-                const count = f.videos.length;
-                const done = f.videos.filter(v => v.watched).length;
-                const percent = count === 0 ? 0 : Math.round((done/count)*100);
-
-                const el = document.createElement('div');
-                el.className = "group bg-surface border border-border hover:border-primary-500/30 rounded-xl p-5 cursor-pointer transition-all hover:-translate-y-1";
-                el.onclick = () => openFolder(f.id);
-                el.innerHTML = `
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-10 h-10 rounded-lg bg-surfaceHighlight flex items-center justify-center text-zinc-400 group-hover:text-primary-400 group-hover:bg-primary-500/10 transition-colors">
-                            <i data-lucide="folder" class="w-5 h-5"></i>
-                        </div>
-                        <span class="text-[10px] font-mono bg-surfaceHighlight border border-border px-2 py-1 rounded-md text-zinc-500">${done}/${count}</span>
-                    </div>
-                    <h3 class="font-bold text-zinc-200 group-hover:text-white truncate mb-4">${escapeHtml(f.name)}</h3>
-                    <div class="w-full bg-surfaceHighlight h-1 rounded-full overflow-hidden">
-                        <div class="bg-primary-500 h-full rounded-full" style="width: ${percent}%"></div>
-                    </div>
-                `;
-                grid.appendChild(el);
-            });
-            lucide.createIcons();
-            
-            // Clean up player
-            if(player) {
-                player.destroy();
-                player = null;
-            }
-        }
-
-        function openFolder(id) {
-            activeFolderId = id;
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('view-player').classList.remove('hidden');
-            renderSidebar();
-            renderPlaylist();
-
-            // Auto-load logic if not resuming
-            if(!activeVideoId) {
-                const f = getFolder(id);
-                if(f.videos.length > 0) loadVideo(f.videos[0].id);
-                else loadVideo(null);
-            }
-        }
-
-        function loadVideo(id) {
-            activeVideoId = id;
-            if(!id) {
-                document.getElementById('yt-player-mount').innerHTML = '<div class="w-full h-full flex items-center justify-center text-zinc-700"><i data-lucide="play" class="w-12 h-12"></i></div>';
-                document.getElementById('player-title').innerText = "Select Video";
-                document.getElementById('player-meta').innerText = "--";
-                lucide.createIcons();
-                return;
-            }
-
-            const f = getFolder(activeFolderId);
-            const v = f.videos.find(x => x.id === id);
-            
-            document.getElementById('player-title').innerText = v.title;
-            document.getElementById('player-meta').innerText = `${v.tag} • ${f.name}`;
-            db.lastPlayed = { folderId: activeFolderId, videoId: id };
-            save();
-
-            if(!ytApiReady) {
-                setTimeout(() => loadVideo(id), 500);
-                return;
-            }
-
-            // Always create a fresh player to avoid state corruption from extensions
-            if(player) player.destroy();
-            
-            // Ensure mount point exists
-            const container = document.getElementById('video-container');
-            if(!document.getElementById('yt-player-mount')) {
-                const mount = document.createElement('div');
-                mount.id = 'yt-player-mount';
-                container.prepend(mount);
-            }
-
-            player = new YT.Player('yt-player-mount', {
-                height: '100%',
-                width: '100%',
-                videoId: v.ytId,
-                playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1 },
-                events: {
-                    'onReady': onPlayerReady
-                }
-            });
-            renderPlaylist();
-        }
-
-        function onPlayerReady(event) {
-            // Restore speed setting
-            const speedInput = document.querySelector('input[type="range"]');
-            event.target.setPlaybackRate(parseFloat(speedInput.value));
-        }
-
-        // --- PLAYLIST UI ---
-        function renderPlaylist() {
-            const list = document.getElementById('playlist-container');
-            list.innerHTML = '';
-            const f = getFolder(activeFolderId);
-            if(!f) return;
-
-            const query = document.getElementById('playlist-search').value.toLowerCase();
-            const videos = f.videos.filter(v => v.title.toLowerCase().includes(query));
-            
-            const done = f.videos.filter(v => v.watched).length;
-            document.getElementById('playlist-stats').innerText = `${done}/${f.videos.length} Watched`;
-
-            videos.forEach((v, idx) => {
-                const isActive = v.id === activeVideoId;
-                const el = document.createElement('div');
-                el.draggable = true;
-                el.ondragstart = (e) => dragStart(e, idx);
-                el.ondragover = dragOver;
-                el.ondrop = (e) => drop(e, idx);
-                
-                el.className = `p-3 rounded-lg cursor-pointer border flex gap-3 transition-all mb-1 ${isActive ? 'bg-primary-500/10 border-primary-500/30' : 'bg-surface border-transparent hover:border-border'}`;
-                el.onclick = (e) => {
-                    if(!e.target.closest('.no-trigger')) loadVideo(v.id);
-                };
-
-                el.innerHTML = `
-                    <div class="no-trigger pt-1">
-                        <label class="cursor-pointer">
-                            <input type="checkbox" class="hidden" ${v.watched ? 'checked' : ''} onchange="toggleWatched('${v.id}')">
-                            <div class="w-4 h-4 rounded border border-zinc-600 hover:border-zinc-400 bg-transparent flex items-center justify-center transition-colors">
-                                ${v.watched ? '<div class="w-2.5 h-2.5 bg-emerald-500 rounded-sm"></div>' : ''}
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="text-xs font-medium ${isActive ? 'text-primary-200' : 'text-zinc-300'} truncate mb-1">${escapeHtml(v.title)}</h4>
-                        <div class="flex items-center gap-2">
-                             <span class="text-[9px] px-1.5 py-0.5 rounded border border-border text-zinc-500 bg-background">${v.tag}</span>
-                             ${isActive ? '<span class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse"></span>' : ''}
-                        </div>
-                    </div>
-                    <div class="no-trigger opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button onclick="deleteVideo('${v.id}')" class="text-zinc-600 hover:text-red-400"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
-                    </div>
-                `;
-                list.appendChild(el);
-            });
-            lucide.createIcons();
-        }
-
-        function renderSidebar() {
-            const list = document.getElementById('sidebar-list');
-            list.innerHTML = '';
-            
-            db.folders.forEach(f => {
-                const isActive = f.id === activeFolderId;
-                const el = document.createElement('div');
-                el.className = `px-3 py-2 rounded-lg cursor-pointer text-xs font-medium flex items-center gap-2 mb-0.5 transition-colors ${isActive ? 'text-white bg-surfaceHighlight border-r-2 border-primary-500' : 'text-zinc-500 hover:text-zinc-300 hover:bg-surfaceHighlight/50'}`;
-                el.onclick = () => openFolder(f.id);
-                el.innerHTML = `
-                    <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-3.5 h-3.5"></i>
-                    <span class="truncate flex-1">${escapeHtml(f.name)}</span>
-                    ${f.videos.length > 0 ? `<span class="text-[9px] opacity-50">${f.videos.length}</span>` : ''}
-                `;
-                list.appendChild(el);
-            });
-            lucide.createIcons();
-        }
-
-        // --- PLAYER FEATURES ---
-        function setSpeed(val) {
-            document.getElementById('speed-val').innerText = parseFloat(val).toFixed(1) + 'x';
-            if(player && player.setPlaybackRate) player.setPlaybackRate(parseFloat(val));
-        }
-
-        function toggleCinema() {
-            document.body.classList.toggle('cinema-mode');
-            document.getElementById('btn-cinema').classList.toggle('text-white');
-            document.getElementById('btn-cinema').classList.toggle('bg-primary-500/20');
-        }
-
-        function toggleInvert() {
-            const iframe = document.querySelector('iframe');
-            if(iframe) {
-                iframe.classList.toggle('filter-invert');
-                document.getElementById('btn-invert').classList.toggle('text-primary-400');
-            }
-        }
-
-        function toggleTheater() {
-            const panel = document.getElementById('right-panel');
-            if(panel.classList.contains('w-0')) {
-                panel.classList.remove('w-0', 'border-0', 'overflow-hidden');
-                panel.classList.add('w-80', 'border-l');
-                document.getElementById('btn-theater').classList.remove('text-primary-400');
-            } else {
-                panel.classList.add('w-0', 'border-0', 'overflow-hidden');
-                panel.classList.remove('w-80', 'border-l');
-                document.getElementById('btn-theater').classList.add('text-primary-400');
-            }
-        }
-
-        function toggleFocus() {
-            document.body.classList.toggle('focus-mode');
-            document.getElementById('btn-focus').classList.toggle('text-primary-400');
-            // Force redraw
-            window.dispatchEvent(new Event('resize'));
-        }
-
-        // Loop Logic
-        function setLoopPoint(pt) {
-            if(!player || !player.getCurrentTime) return;
-            const t = player.getCurrentTime();
-            if(pt === 'A') {
-                loopStart = t;
-                document.getElementById('btn-loop-a').classList.add('text-primary-400', 'bg-primary-500/10');
-                toast(`Start: ${formatTime(t)}`);
-            } else {
-                loopEnd = t;
-                document.getElementById('btn-loop-b').classList.add('text-primary-400', 'bg-primary-500/10');
-                toast(`End: ${formatTime(t)}`);
-            }
-            if(loopStart !== null && loopEnd !== null) enableLoop(true);
-        }
-
-        function toggleLoop() {
-            if(isLooping) enableLoop(false);
-            else if(loopStart !== null && loopEnd !== null) enableLoop(true);
-            else toast('Set A & B first', 'error');
-        }
-
-        function enableLoop(enabled) {
-            isLooping = enabled;
-            const btn = document.getElementById('btn-loop-toggle');
-            if(enabled) {
-                btn.classList.add('text-primary-400');
-                if(loopInterval) clearInterval(loopInterval);
-                loopInterval = setInterval(() => {
-                    if(player && player.getCurrentTime) {
-                        const t = player.getCurrentTime();
-                        if(t > loopEnd || t < loopStart) player.seekTo(loopStart);
+        // 1. Data Layer
+        const dataManager = {
+            init: () => {
+                const saved = localStorage.getItem(DB_KEY);
+                if (saved) {
+                    try {
+                        state.db = JSON.parse(saved);
+                    } catch (e) {
+                        console.error("Migration Error", e);
+                        dataManager.reset();
                     }
-                }, 500);
-                toast('Loop Active');
-            } else {
-                btn.classList.remove('text-primary-400');
-                clearInterval(loopInterval);
-                toast('Loop Off');
+                } else {
+                    dataManager.reset();
+                }
+            },
+            reset: () => {
+                state.db = { folders: [{ id: 'demo123', name: 'Getting Started', videos: [] }], lastPlayed: null };
+                dataManager.save();
+            },
+            save: () => {
+                localStorage.setItem(DB_KEY, JSON.stringify(state.db));
+            },
+            getFolder: (id) => state.db.folders.find(f => f.id === id),
+            getVideo: (folderId, videoId) => {
+                const f = dataManager.getFolder(folderId);
+                return f ? f.videos.find(v => v.id === videoId) : null;
+            },
+            export: () => {
+                const blob = new Blob([JSON.stringify(state.db)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `StudyOS_Backup_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`;
+                a.click();
+            },
+            import: (input) => {
+                const file = input.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const json = JSON.parse(e.target.result);
+                        if (json.folders) {
+                            state.db = json;
+                            dataManager.save();
+                            app.init(); // Re-render
+                            ui.toast('Backup Restored Successfully');
+                        }
+                    } catch (err) { ui.toast('Invalid File', 'error'); }
+                };
+                reader.readAsText(file);
             }
-        }
+        };
 
-        // --- UTILS ---
-        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-        function formatTime(s) { return new Date(s * 1000).toISOString().substr(14, 5); }
-        function toast(msg, type='success') {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            const i = document.getElementById('toast-icon');
-            if(type==='error') { i.setAttribute('data-lucide','alert-circle'); i.className="w-4 h-4 text-red-400"; }
-            else { i.setAttribute('data-lucide','check-circle'); i.className="w-4 h-4 text-emerald-400"; }
-            lucide.createIcons();
-            t.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
-        }
+        // 2. UI Rendering
+        const ui = {
+            init: () => {
+                ui.renderSidebar();
+                ui.renderTags();
+                lucide.createIcons();
+                ui.setupDragAndDrop();
+            },
+            renderSidebar: () => {
+                const list = document.getElementById('sidebar-folders');
+                list.innerHTML = '';
+                state.db.folders.forEach(f => {
+                    const isActive = f.id === state.activeFolderId;
+                    const div = document.createElement('div');
+                    div.className = `group flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${isActive ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`;
+                    div.onclick = () => router.navigate('folder', f.id);
+                    div.innerHTML = `
+                        <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-4 h-4 transition-colors group-hover:text-primary-400"></i>
+                        <span class="truncate flex-1 text-sm font-medium">${f.name}</span>
+                        ${f.videos.length > 0 ? `<span class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-zinc-400 font-mono">${f.videos.length}</span>` : ''}
+                    `;
+                    list.appendChild(div);
+                });
+                lucide.createIcons();
+            },
+            renderDashboard: () => {
+                const grid = document.getElementById('dash-grid');
+                grid.innerHTML = '';
+                
+                // Calculate Stats
+                let totalVids = 0, totalWatched = 0;
+                
+                state.db.folders.forEach(f => {
+                    totalVids += f.videos.length;
+                    totalWatched += f.videos.filter(v => v.watched).length;
+                    
+                    const count = f.videos.length;
+                    const done = f.videos.filter(v => v.watched).length;
+                    const percent = count === 0 ? 0 : Math.round((done/count)*100);
+                    
+                    const card = document.createElement('div');
+                    card.className = "glass-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden";
+                    card.onclick = () => router.navigate('folder', f.id);
+                    card.innerHTML = `
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-zinc-400 group-hover:text-primary-400 group-hover:scale-110 transition-all duration-300">
+                                    <i data-lucide="folder" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-2xl font-bold text-white font-mono">${percent}%</span>
+                                    <span class="text-[10px] text-zinc-500 uppercase tracking-wider">Completed</span>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-lg text-zinc-200 group-hover:text-white truncate mb-2 group-hover:text-glow transition-all">${f.name}</h3>
+                            <div class="flex items-center gap-2 text-xs text-zinc-500 mb-4">
+                                <span>${done} / ${count} Lectures</span>
+                            </div>
+                            <!-- Progress Bar -->
+                            <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-primary-600 to-primary-400 h-full rounded-full transition-all duration-1000" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
 
-        // --- DRAG & DROP & MODALS ---
-        let dragIdx = null;
-        function setupDragDrop() {
-            document.addEventListener('dragend', () => {
-                document.getElementById('drag-overlay').classList.add('hidden');
-                renderPlaylist();
-            });
-        }
-        function dragStart(e, idx) {
-            dragIdx = idx;
-            document.getElementById('drag-overlay').classList.remove('hidden');
-        }
-        function dragOver(e) { e.preventDefault(); }
-        function drop(e, targetIdx) {
-            e.preventDefault();
-            const f = getFolder(activeFolderId);
-            const item = f.videos.splice(dragIdx, 1)[0];
-            f.videos.splice(targetIdx, 0, item);
-            save();
-            renderPlaylist();
-        }
+                // Show Global Stats
+                const statBox = document.getElementById('global-stats');
+                statBox.innerHTML = `
+                    <div class="flex flex-col items-end">
+                        <span class="text-3xl font-bold text-white leading-none">${totalWatched}</span>
+                        <span class="text-xs text-zinc-500 font-medium">WATCHED</span>
+                    </div>
+                    <div class="w-px h-10 bg-white/10"></div>
+                     <div class="flex flex-col items-end">
+                        <span class="text-3xl font-bold text-white leading-none">${totalVids}</span>
+                        <span class="text-xs text-zinc-500 font-medium">TOTAL</span>
+                    </div>
+                `;
 
-        function openModal(name) {
-            const m = document.getElementById('modal-' + name);
-            const o = document.getElementById('modal-overlay');
-            o.classList.remove('hidden'); m.classList.remove('hidden');
-            setTimeout(() => { o.classList.remove('opacity-0'); m.classList.remove('opacity-0', 'scale-95'); }, 10);
+                // Handle Empty State & Hero
+                if(state.db.folders.length === 0) {
+                    document.getElementById('dash-empty').classList.remove('hidden');
+                    document.getElementById('hero-section').classList.add('hidden');
+                } else {
+                    document.getElementById('dash-empty').classList.add('hidden');
+                    // Hero Logic
+                    if(state.db.lastPlayed) {
+                        const lf = dataManager.getFolder(state.db.lastPlayed.folderId);
+                        const lv = lf ? lf.videos.find(v => v.id === state.db.lastPlayed.videoId) : null;
+                        if(lf && lv) {
+                            document.getElementById('hero-section').classList.remove('hidden');
+                            document.getElementById('hero-title').innerText = lf.name;
+                            document.getElementById('hero-sub').innerText = lv.title;
+                        }
+                    }
+                }
+                
+                lucide.createIcons();
+            },
+            renderPlaylist: () => {
+                const list = document.getElementById('playlist-container');
+                list.innerHTML = '';
+                const f = dataManager.getFolder(state.activeFolderId);
+                if(!f) return;
+
+                document.getElementById('playlist-folder-name').innerText = f.name;
+                const query = document.getElementById('playlist-search').value.toLowerCase();
+                const videos = f.videos.filter(v => v.title.toLowerCase().includes(query));
+                
+                // Update stats
+                const done = f.videos.filter(v => v.watched).length;
+                document.getElementById('playlist-stats').innerText = `${done} / ${f.videos.length} Watched`;
+
+                videos.forEach((v, idx) => {
+                    const isActive = v.id === state.activeVideoId;
+                    const el = document.createElement('div');
+                    el.draggable = true;
+                    el.ondragstart = (e) => ui.dragStart(e, idx);
+                    el.ondragover = (e) => e.preventDefault();
+                    el.ondrop = (e) => ui.drop(e, idx);
+                    
+                    el.className = `group p-3 rounded-xl cursor-pointer flex gap-3 transition-all mb-1 border ${isActive ? 'bg-primary-500/10 border-primary-500/30' : 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/5'}`;
+                    
+                    // Main click handler
+                    el.onclick = (e) => {
+                         if(!e.target.closest('.no-click')) player.load(v.id);
+                    };
+
+                    el.innerHTML = `
+                         <div class="no-click pt-1">
+                             <div class="w-5 h-5 rounded-md border ${v.watched ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600 hover:border-zinc-400'} flex items-center justify-center transition-all cursor-pointer" onclick="actions.toggleWatched('${v.id}')">
+                                 ${v.watched ? '<i data-lucide="check" class="w-3.5 h-3.5 text-black"></i>' : ''}
+                             </div>
+                         </div>
+                         <div class="flex-1 min-w-0">
+                             <h4 class="text-sm font-medium ${isActive ? 'text-primary-200' : 'text-zinc-300'} truncate mb-1 group-hover:text-white transition-colors">${v.title}</h4>
+                             <div class="flex items-center justify-between">
+                                 <div class="flex items-center gap-2">
+                                     <span class="text-[10px] px-2 py-0.5 rounded border border-white/10 text-zinc-500 bg-white/5 uppercase tracking-wider">${v.tag}</span>
+                                     ${isActive ? '<div class="flex gap-0.5 items-end h-3"><span class="w-0.5 h-2 bg-primary-400 animate-pulse"></span><span class="w-0.5 h-3 bg-primary-400 animate-pulse delay-75"></span><span class="w-0.5 h-1.5 bg-primary-400 animate-pulse delay-150"></span></div>' : ''}
+                                 </div>
+                                 <button onclick="actions.deleteVideo('${v.id}')" class="no-click opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-red-400 transition-opacity"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                             </div>
+                         </div>
+                    `;
+                    list.appendChild(el);
+                });
+                lucide.createIcons();
+            },
+            renderTags: () => {
+                const con = document.getElementById('tag-selector');
+                con.innerHTML = '';
+                TAGS.forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = "tag-btn text-xs border border-white/10 rounded-lg py-2 text-zinc-500 hover:bg-white/5 transition-colors";
+                    btn.innerText = t;
+                    btn.onclick = () => {
+                        document.getElementById('inp-video-tag').value = t;
+                        document.querySelectorAll('.tag-btn').forEach(b => b.className = "tag-btn text-xs border border-white/10 rounded-lg py-2 text-zinc-500 hover:bg-white/5 transition-colors");
+                        btn.className = "tag-btn text-xs border border-primary-500/30 bg-primary-500/10 text-primary-300 rounded-lg py-2 font-bold";
+                    };
+                    if(t === 'Lecture') btn.click();
+                    con.appendChild(btn);
+                });
+            },
+            openModal: (id) => {
+                const m = document.getElementById('modal-' + id);
+                const o = document.getElementById('modal-overlay');
+                o.classList.remove('hidden'); m.classList.remove('hidden');
+                setTimeout(() => { o.classList.remove('opacity-0'); m.classList.remove('opacity-0', 'scale-95'); }, 10);
+                
+                if(id === 'edit-folder') document.getElementById('inp-edit-name').value = dataManager.getFolder(state.activeFolderId).name;
+            },
+            closeModals: () => {
+                const o = document.getElementById('modal-overlay');
+                const modals = document.querySelectorAll('.glass-panel');
+                o.classList.add('opacity-0');
+                modals.forEach(m => m.classList.add('opacity-0', 'scale-95'));
+                setTimeout(() => { o.classList.add('hidden'); modals.forEach(m => m.classList.add('hidden')); }, 300);
+            },
+            toast: (msg, type='success') => {
+                const t = document.getElementById('toast');
+                document.getElementById('toast-msg').innerText = msg;
+                const i = document.getElementById('toast-icon');
+                if(type === 'error') {
+                    i.setAttribute('data-lucide', 'alert-triangle');
+                    i.className = "w-5 h-5 text-red-400";
+                } else {
+                    i.setAttribute('data-lucide', 'check-circle');
+                    i.className = "w-5 h-5 text-emerald-400";
+                }
+                lucide.createIcons();
+                t.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+            },
+            toggleAmbient: () => {
+                state.ambientMode = !state.ambientMode;
+                document.body.classList.toggle('ambient-active', state.ambientMode);
+                document.getElementById('btn-ambient').classList.toggle('text-primary-400', state.ambientMode);
+                ui.toast(state.ambientMode ? 'Ambient Mode On' : 'Ambient Mode Off');
+            },
+            toggleCinema: () => {
+                // Correctly toggle light-out mode
+                document.body.classList.toggle('cinema-mode');
+                const active = document.body.classList.contains('cinema-mode');
+                
+                document.getElementById('btn-cinema').classList.toggle('text-white', active);
+                document.getElementById('btn-cinema').classList.toggle('text-zinc-400', !active);
+                
+                ui.toast(active ? 'Cinema Mode On' : 'Cinema Mode Off');
+            },
+            // Drag Drop
+            dragStart: (e, idx) => { e.dataTransfer.setData('text/plain', idx); },
+            drop: (e, idx) => {
+                e.preventDefault();
+                const fromIdx = e.dataTransfer.getData('text/plain');
+                const f = dataManager.getFolder(state.activeFolderId);
+                const item = f.videos.splice(fromIdx, 1)[0];
+                f.videos.splice(idx, 0, item);
+                dataManager.save();
+                ui.renderPlaylist();
+            },
+            setupDragAndDrop: () => {
+                // Global drop handlers if needed
+            }
+        };
+
+        // 3. Router & View Logic
+        const router = {
+            navigate: (view, id = null) => {
+                const dash = document.getElementById('view-dashboard');
+                const playerView = document.getElementById('view-player');
+                
+                // If we are currently watching a video and go to dashboard, trigger Mini Mode
+                if (view === 'dashboard' && state.activeVideoId && !state.miniMode) {
+                    router.minimizePlayer();
+                    dash.classList.remove('hidden');
+                    playerView.classList.add('hidden');
+                    ui.renderDashboard(); // Update stats
+                    return;
+                }
+
+                // Normal Navigation
+                if (view === 'dashboard') {
+                    dash.classList.remove('hidden');
+                    playerView.classList.add('hidden');
+                    state.activeFolderId = null;
+                    if(state.miniMode) router.closeMiniPlayer(); // Close mini player if explicitly going to dash without playing? No, keep it.
+                    ui.renderDashboard();
+                } else if (view === 'folder') {
+                    state.activeFolderId = id;
+                    dash.classList.add('hidden');
+                    playerView.classList.remove('hidden');
+                    ui.renderSidebar();
+                    ui.renderPlaylist();
+                    
+                    // If returning to the same video, expand mini player
+                    if (state.miniMode && state.activeVideoId) {
+                         // Check if video belongs to this folder
+                         const f = dataManager.getFolder(id);
+                         if(f.videos.find(v => v.id === state.activeVideoId)) {
+                             router.restorePlayer();
+                         }
+                    } else if (!state.activeVideoId) {
+                        // Auto play first
+                        const f = dataManager.getFolder(id);
+                        if(f.videos.length > 0) player.load(f.videos[0].id);
+                        else player.load(null);
+                    }
+                }
+            },
+            minimizePlayer: () => {
+                if(!state.activeVideoId) return;
+                state.miniMode = true;
+                
+                const wrapper = document.getElementById('video-wrapper');
+                // Move wrapper to body body for fixed positioning context
+                document.body.appendChild(wrapper);
+                
+                wrapper.classList.add('mode-mini');
+                document.getElementById('view-player').classList.add('hidden');
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                ui.renderDashboard();
+            },
+            restorePlayer: () => {
+                state.miniMode = false;
+                const wrapper = document.getElementById('video-wrapper');
+                wrapper.classList.remove('mode-mini');
+                
+                // Move back to stage
+                document.getElementById('player-stage').appendChild(wrapper);
+                
+                document.getElementById('view-dashboard').classList.add('hidden');
+                document.getElementById('view-player').classList.remove('hidden');
+                
+                // Ensure we are on the right folder
+                const v = dataManager.getVideo(state.db.lastPlayed.folderId, state.db.lastPlayed.videoId);
+                if(v && state.activeFolderId !== state.db.lastPlayed.folderId) {
+                     state.activeFolderId = state.db.lastPlayed.folderId;
+                     ui.renderPlaylist();
+                     ui.renderSidebar();
+                }
+            },
+            closeMiniPlayer: () => {
+                state.miniMode = false;
+                state.activeVideoId = null;
+                const wrapper = document.getElementById('video-wrapper');
+                wrapper.classList.remove('mode-mini');
+                document.getElementById('player-stage').appendChild(wrapper); // Reset position
+                
+                if(state.playerObj) state.playerObj.stopVideo();
+                document.getElementById('yt-player-mount').innerHTML = ''; // Kill player
+                state.playerObj = null;
+            }
+        };
+
+        // 4. Player Logic
+        const player = {
+            load: (id) => {
+                state.activeVideoId = id;
+                if(!id) {
+                    document.getElementById('player-title').innerText = "Select a Lecture";
+                    // Show placeholder logic
+                    return;
+                }
+                
+                const f = dataManager.getFolder(state.activeFolderId);
+                const v = f.videos.find(x => x.id === id);
+                
+                document.getElementById('player-title').innerText = `${f.name} - ${v.title}`;
+                
+                // Save State
+                state.db.lastPlayed = { folderId: state.activeFolderId, videoId: id };
+                dataManager.save();
+                ui.renderPlaylist();
+                
+                // Youtube Logic
+                if(state.playerObj) {
+                    state.playerObj.loadVideoById(v.ytId);
+                } else {
+                    state.playerObj = new YT.Player('yt-player-mount', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: v.ytId,
+                        playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1, 'iv_load_policy': 3 },
+                        events: { 'onStateChange': player.onStateChange }
+                    });
+                }
+            },
+            togglePlay: () => {
+                if(!state.playerObj) return;
+                const s = state.playerObj.getPlayerState();
+                if(s === 1) state.playerObj.pauseVideo();
+                else state.playerObj.playVideo();
+            },
+            seek: (sec) => {
+                if(!state.playerObj) return;
+                const t = state.playerObj.getCurrentTime();
+                state.playerObj.seekTo(t + sec);
+            },
+            setSpeed: (val) => {
+                document.getElementById('speed-val').innerText = parseFloat(val).toFixed(1) + 'x';
+                if(state.playerObj) state.playerObj.setPlaybackRate(parseFloat(val));
+            },
+            // Loop Logic
+            setLoop: (pt) => {
+                if(!state.playerObj) return;
+                const t = state.playerObj.getCurrentTime();
+                const btn = document.getElementById(`btn-loop-${pt.toLowerCase()}`);
+                
+                if(pt === 'A') state.loop.start = t;
+                else state.loop.end = t;
+                
+                btn.classList.add('bg-primary-500', 'text-white');
+                ui.toast(`Loop Point ${pt} Set`);
+                
+                if(state.loop.start !== null && state.loop.end !== null) player.toggleLoop(true);
+            },
+            toggleLoop: (forceState = null) => {
+                const btn = document.getElementById('btn-loop-toggle');
+                const newState = forceState !== null ? forceState : !state.loop.active;
+                
+                if(newState) {
+                    if(state.loop.start === null || state.loop.end === null) return ui.toast('Set A & B points first', 'error');
+                    state.loop.active = true;
+                    btn.classList.add('text-primary-400');
+                    
+                    if(state.loop.interval) clearInterval(state.loop.interval);
+                    state.loop.interval = setInterval(() => {
+                        const t = state.playerObj.getCurrentTime();
+                        if(t >= state.loop.end || t < state.loop.start) state.playerObj.seekTo(state.loop.start);
+                    }, 500);
+                    ui.toast('Loop Active');
+                } else {
+                    state.loop.active = false;
+                    btn.classList.remove('text-primary-400');
+                    clearInterval(state.loop.interval);
+                    ui.toast('Loop Disabled');
+                }
+            },
+            onStateChange: (e) => {
+                if(e.data === 0) { // Ended
+                     // Auto play next could go here
+                }
+            }
+        };
+
+        // 5. Actions (Business Logic)
+        const actions = {
+            createFolder: () => {
+                const name = document.getElementById('inp-folder-name').value;
+                if(!name) return;
+                state.db.folders.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: name,
+                    videos: []
+                });
+                dataManager.save();
+                ui.closeModals();
+                ui.renderSidebar();
+                ui.renderDashboard();
+                ui.toast('Folder Created');
+            },
+            addVideo: () => {
+                const url = document.getElementById('inp-video-url').value;
+                const title = document.getElementById('inp-video-title').value;
+                const tag = document.getElementById('inp-video-tag').value;
+                
+                // Extract ID
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                const ytId = (match && match[2].length === 11) ? match[2] : null;
+                
+                if(!ytId) return ui.toast('Invalid YouTube URL', 'error');
+                
+                const f = dataManager.getFolder(state.activeFolderId);
+                const vid = Math.random().toString(36).substr(2, 9);
+                f.videos.push({
+                    id: vid,
+                    ytId: ytId,
+                    title: title || `Lecture ${f.videos.length + 1}`,
+                    tag: tag,
+                    watched: false
+                });
+                
+                dataManager.save();
+                ui.closeModals();
+                ui.renderPlaylist();
+                if(f.videos.length === 1) player.load(vid);
+                ui.toast('Video Added');
+            },
+            deleteVideo: (id) => {
+                if(!confirm("Delete this video?")) return;
+                const f = dataManager.getFolder(state.activeFolderId);
+                f.videos = f.videos.filter(v => v.id !== id);
+                dataManager.save();
+                ui.renderPlaylist();
+                if(state.activeVideoId === id) {
+                    state.playerObj.stopVideo();
+                    document.getElementById('yt-player-mount').innerHTML = '';
+                    document.getElementById('player-title').innerText = 'Select Video';
+                }
+            },
+            toggleWatched: (id) => {
+                const f = dataManager.getFolder(state.activeFolderId);
+                const v = f.videos.find(x => x.id === id);
+                v.watched = !v.watched;
+                dataManager.save();
+                ui.renderPlaylist();
+                ui.renderDashboard(); // For consistency if minified
+            },
+            deleteCurrentFolder: () => {
+                if(!confirm("Delete entire folder and all videos?")) return;
+                state.db.folders = state.db.folders.filter(f => f.id !== state.activeFolderId);
+                dataManager.save();
+                ui.closeModals();
+                router.navigate('dashboard');
+                ui.renderSidebar();
+            },
+            saveEditFolder: () => {
+                const f = dataManager.getFolder(state.activeFolderId);
+                f.name = document.getElementById('inp-edit-name').value;
+                dataManager.save();
+                ui.closeModals();
+                ui.renderSidebar();
+                ui.renderPlaylist();
+            }
+        };
+
+        // 6. Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if(e.target.tagName === 'INPUT') return; // Ignore input fields
             
-            if(name === 'video') {
-                document.getElementById('inp-video-tag').value = 'Lecture';
-                updateTagVisuals();
+            const key = e.key.toLowerCase();
+            if(key === ' ' || key === 'k') { e.preventDefault(); player.togglePlay(); }
+            if(key === 'l') player.seek(10);
+            if(key === 'j') player.seek(-10);
+            if(key === 'm') { 
+                if(state.playerObj) {
+                    if(state.playerObj.isMuted()) state.playerObj.unMute(); else state.playerObj.mute();
+                }
             }
-            if(name === 'edit-folder') document.getElementById('inp-edit-name').value = getFolder(activeFolderId).name;
-        }
+            if(key === 'a') ui.toggleAmbient();
+            if(key === 'escape') {
+                if(document.getElementById('modal-overlay').classList.contains('hidden')) {
+                     if(!state.miniMode && state.activeVideoId && !document.getElementById('view-player').classList.contains('hidden')) {
+                         router.minimizePlayer();
+                     } else if (state.miniMode) {
+                         router.restorePlayer();
+                     }
+                } else {
+                    ui.closeModals();
+                }
+            }
+        });
 
-        function closeModals() {
-            const o = document.getElementById('modal-overlay');
-            const modals = document.querySelectorAll('[id^="modal-"]:not(#modal-overlay)');
-            o.classList.add('opacity-0');
-            modals.forEach(m => m.classList.add('opacity-0', 'scale-95'));
-            setTimeout(() => { o.classList.add('hidden'); modals.forEach(m => m.classList.add('hidden')); }, 300);
-        }
+        // 7. Initialization
+        const app = {
+            init: () => {
+                dataManager.init();
+                ui.init();
+                
+                // Move player mount to stage initially
+                const wrapper = document.getElementById('video-wrapper');
+                document.getElementById('player-stage').appendChild(wrapper);
 
-        // Form Logic
-        function createFolder() {
-            const name = document.getElementById('inp-folder-name').value;
-            if(!name) return;
-            db.folders.push({id: uid(), name: name, videos: []});
-            save(); renderDashboard(); closeModals();
-        }
+                // Load YT API
+                if (!window.YT) {
+                    const tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    const firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                }
+                
+                // Initial Route
+                router.navigate('dashboard');
+            },
+            resumeLast: () => {
+                if(state.db.lastPlayed) {
+                    router.navigate('folder', state.db.lastPlayed.folderId);
+                    setTimeout(() => {
+                        player.load(state.db.lastPlayed.videoId);
+                    }, 500);
+                }
+            }
+        };
 
-        function addVideo() {
-            const url = document.getElementById('inp-video-url').value;
-            const title = document.getElementById('inp-video-title').value;
-            const tag = document.getElementById('inp-video-tag').value;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            const ytId = (match && match[2].length === 11) ? match[2] : null;
-            if(!ytId) { toast('Invalid URL', 'error'); return; }
+        window.onYouTubeIframeAPIReady = function() { state.ytApiReady = true; };
+        window.onload = app.init;
 
-            const f = getFolder(activeFolderId);
-            const vid = uid();
-            f.videos.push({ id: vid, ytId: ytId, title: title || `Lecture ${f.videos.length + 1}`, tag: tag, watched: false });
-            save(); renderPlaylist(); closeModals();
-            if(f.videos.length === 1) loadVideo(vid);
-        }
-
-        function deleteVideo(id) {
-            if(!confirm('Remove?')) return;
-            const f = getFolder(activeFolderId);
-            f.videos = f.videos.filter(v => v.id !== id);
-            save();
-            if(activeVideoId === id) loadVideo(null);
-            renderPlaylist();
-        }
-
-        function toggleWatched(id) {
-            const f = getFolder(activeFolderId);
-            const v = f.videos.find(x => x.id === id);
-            v.watched = !v.watched;
-            save(); renderPlaylist();
-        }
-
-        function deleteCurrentFolder() {
-            if(!confirm('Delete Folder?')) return;
-            db.folders = db.folders.filter(f => f.id !== activeFolderId);
-            save(); renderDashboard(); closeModals();
-        }
-
-        function saveEditFolder() {
-            const f = getFolder(activeFolderId);
-            f.name = document.getElementById('inp-edit-name').value;
-            save(); closeModals();
-            if(activeVideoId) document.getElementById('player-meta').innerText = `${f.videos.find(v=>v.id===activeVideoId).tag} • ${f.name}`;
-        }
-
-        function setTag(t) {
-            document.getElementById('inp-video-tag').value = t;
-            updateTagVisuals();
-        }
-
-        function updateTagVisuals() {
-            const t = document.getElementById('inp-video-tag').value;
-            document.querySelectorAll('.tag-btn').forEach(b => {
-                if(b.dataset.tag === t) b.className = "tag-btn text-xs border rounded-lg py-2 transition-colors border-primary-500/50 bg-primary-500/10 text-primary-400";
-                else b.className = "tag-btn text-xs border border-border text-zinc-500 rounded-lg py-2 hover:bg-surfaceHighlight transition-colors";
-            });
-        }
-
-        function toggleMobileSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-        }
-
-        function resumeLast() {
-            if(db.lastPlayed) openFolder(db.lastPlayed.folderId);
-        }
-
-        function exportData() {
-            const s = JSON.stringify(db);
-            const b = new Blob([s], {type: 'application/json'});
-            const u = URL.createObjectURL(b);
-            const a = document.createElement('a');
-            a.href = u; a.download = `studyos-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
-        }
-
-        function processImport(input) {
-            const file = input.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    if(json.folders) { db = json; save(); init(); toast('Data Imported'); }
-                } catch(err) { toast('Import Failed', 'error'); }
-            };
-            reader.readAsText(file);
-        }
-
-        window.onload = init;
     </script>
 </body>
 </html>
