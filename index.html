@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEE Main 2026 - Study OS Pro</title>
+    <title>Study OS Pro - JEE 2026</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,24 +23,36 @@
             theme: {
                 extend: {
                     fontFamily: { 
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        background: '#050505',
-                        surface: '#0a0a0a',
-                        surfaceHighlight: '#171717',
-                        border: '#262626',
-                        primary: {
+                        bg: '#030304',
+                        surface: '#0A0A0B',
+                        surfaceHighlight: '#18181B',
+                        border: '#27272A',
+                        accent: {
                             400: '#818cf8',
                             500: '#6366f1',
                             600: '#4f46e5',
+                            glow: 'rgba(99, 102, 241, 0.15)'
                         }
                     },
-                    zIndex: {
-                        '60': '60',
-                        '70': '70',
-                        '100': '100',
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
+                        'scale-in': 'scaleIn 0.2s ease-out forwards',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
                     }
                 }
             }
@@ -48,81 +60,330 @@
     </script>
 
     <style>
-        /* Base & Scrollbar */
-        body { background-color: #050505; color: #e5e5e5; overflow: hidden; }
+        /* Core Aesthetics */
+        body { 
+            background-color: #030304; 
+            color: #e4e4e7; 
+            overflow: hidden; 
+            background-image: radial-gradient(circle at 50% 0%, #18181b 0%, transparent 40%);
+        }
         
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #404040; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #525252; }
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #52525b; }
 
-        /* Range Slider Styling */
+        /* --- SPEED SLIDER STYLING --- */
         input[type=range] {
-            -webkit-appearance: none; width: 100%; background: transparent;
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px; 
+            background: #27272a; 
+            border-radius: 2px;
+            cursor: pointer;
+            outline: none;
+            margin: 0;
+            vertical-align: middle;
         }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px rgba(99,102,241,0.5);
-        }
+        
+        /* Track - Webkit */
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 2px; cursor: pointer; background: #404040; border-radius: 1px;
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: transparent; 
+            border-radius: 2px;
+            border: none;
         }
 
-        /* Cinema Mode Classes */
-        body.cinema-mode #sidebar, 
-        body.cinema-mode header, 
-        body.cinema-mode #right-panel,
-        body.cinema-mode #player-controls {
-            opacity: 0.1; pointer-events: none; transition: opacity 0.5s ease;
+        /* Thumb - Webkit */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            margin-top: -5px; /* (4px track - 14px thumb) / 2 */
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); 
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            position: relative;
+            z-index: 2;
         }
-        body.cinema-mode #cinema-overlay { opacity: 1; pointer-events: auto; }
-        body.cinema-mode #video-container { z-index: 60; box-shadow: 0 0 100px rgba(0,0,0,0.8); }
 
-        /* Focus Mode Classes (Hides UI completely) */
-        body.focus-mode #sidebar { width: 0; opacity: 0; padding: 0; overflow: hidden; border-right: 0; }
-        body.focus-mode header { height: 0; opacity: 0; overflow: hidden; padding: 0; border-bottom: 0; }
-        body.focus-mode #right-panel { width: 0; opacity: 0; overflow: hidden; border-left: 0; }
+        input[type=range]:hover::-webkit-slider-thumb {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.8);
+        }
+        
+        /* Firefox Support */
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: transparent;
+            border-radius: 2px;
+        }
+        
+        input[type=range]::-moz-range-thumb {
+            height: 14px;
+            width: 14px;
+            border: none;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
 
-        /* Video Filters */
-        .filter-invert { filter: invert(1) hue-rotate(180deg); }
-        .filter-contrast { filter: contrast(1.2) brightness(1.1); }
+        /* Glassmorphism */
+        .glass {
+            background: rgba(10, 10, 11, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        /* --- FOCUS MODE (MAXIMIZE) --- */
+        body.focus-mode header { 
+            height: 0; 
+            padding: 0; 
+            opacity: 0; 
+            overflow: hidden; 
+            border: 0;
+        }
+        body.focus-mode #sidebar { 
+            width: 0 !important; 
+            opacity: 0; 
+            overflow: hidden; 
+            border: 0;
+        }
+        body.focus-mode #right-panel { 
+            width: 0 !important; 
+            opacity: 0; 
+            overflow: hidden; 
+            border: 0;
+        }
+
+        /* --- AMBIENT GLOW --- */
+        .ambient-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140%; height: 140%; /* Oversize to fill corners */
+            /* Stronger, more visible gradient */
+            background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, rgba(79,70,229,0.15) 40%, transparent 70%);
+            filter: blur(50px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        
+        /* The glow effect on the video wrapper itself */
+        #video-wrapper {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glow-active .ambient-glow { 
+            opacity: 1; 
+            animation: pulse-glow 5s ease-in-out infinite alternate;
+        }
+        
+        /* When active, shrink video slightly to show the glow and cast a shadow */
+        .glow-active #video-wrapper {
+            width: 92%;
+            height: 92%;
+            box-shadow: 0 0 100px 30px rgba(99, 102, 241, 0.25);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        /* Keyboard Shortcut Hint */
+        .kbd {
+            font-family: 'JetBrains Mono', monospace;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 10px;
+            color: #a1a1aa;
+            display: inline-block;
+            min-width: 1.2em;
+            text-align: center;
+        }
     </style>
 </head>
-<body class="h-screen flex flex-col font-sans selection:bg-primary-500/30 selection:text-white">
+<body class="h-screen flex flex-col font-sans selection:bg-accent-500/30 selection:text-white">
 
-    <!-- Cinema Overlay -->
-    <div id="cinema-overlay" class="fixed inset-0 bg-black/95 z-50 opacity-0 pointer-events-none transition-opacity duration-500"></div>
-
-    <!-- YouTube API (Loaded dynamically to prevent errors) -->
+    <!-- API Placeholder -->
     <div id="yt-api-placeholder"></div>
 
+    <!-- Command Palette (Global Search) -->
+    <div id="cmd-palette-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-start justify-center pt-[15vh] opacity-0 transition-opacity duration-200" onclick="toggleCmdPalette()">
+        <div class="w-full max-w-xl bg-[#0F0F10] border border-border rounded-xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200" id="cmd-palette-modal" onclick="event.stopPropagation()">
+            <div class="flex items-center px-4 border-b border-border">
+                <i data-lucide="search" class="w-5 h-5 text-zinc-500"></i>
+                <input type="text" id="cmd-input" class="w-full h-14 bg-transparent border-none text-white px-4 focus:ring-0 placeholder-zinc-600 font-medium" placeholder="Search lectures, folders, or type 'help'..." autocomplete="off">
+                <span class="text-xs text-zinc-600 font-mono border border-border px-1.5 py-0.5 rounded">ESC</span>
+            </div>
+            <div id="cmd-results" class="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
+                <!-- Results injected here -->
+            </div>
+            <div class="px-4 py-2 bg-surfaceHighlight border-t border-border flex justify-between items-center text-[10px] text-zinc-500">
+                <div class="flex gap-3">
+                    <span><span class="font-bold text-zinc-400">↑↓</span> to navigate</span>
+                    <span><span class="font-bold text-zinc-400">↵</span> to select</span>
+                </div>
+                <span>Study OS Pro v2.1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div id="shortcuts-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200" onclick="toggleShortcuts()">
+        <div class="w-full max-w-2xl bg-[#0F0F10] border border-border rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200" onclick="event.stopPropagation()">
+            <div class="p-6 border-b border-border flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="keyboard" class="w-5 h-5 text-accent-400"></i> Keyboard Shortcuts
+                </h2>
+                <button onclick="toggleShortcuts()" class="text-zinc-500 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                
+                <!-- Section: Global -->
+                <div class="col-span-1 md:col-span-2 text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 mt-1">Global</div>
+                
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Command Palette</span>
+                    <span class="kbd">⌘K</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Show Shortcuts</span>
+                    <span class="kbd">?</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Close Modals</span>
+                    <span class="kbd">Esc</span>
+                </div>
+
+                <!-- Section: Player -->
+                <div class="col-span-1 md:col-span-2 text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 mt-4">Video Player</div>
+                
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Play / Pause</span>
+                    <span class="kbd">Space</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Seek Backward</span>
+                    <span class="kbd">←</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Seek Forward</span>
+                    <span class="kbd">→</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Fullscreen (Native)</span>
+                    <span class="kbd">F</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Mute / Unmute</span>
+                    <span class="kbd">M</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Maximize Mode</span>
+                    <span class="kbd">Z</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Theater Mode</span>
+                    <span class="kbd">T</span>
+                </div>
+
+                <!-- Section: Tools -->
+                <div class="col-span-1 md:col-span-2 text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 mt-4">Tools</div>
+
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Toggle Loop</span>
+                    <span class="kbd">L</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Set Loop Start (A)</span>
+                    <span class="kbd">[</span>
+                </div>
+                <div class="flex justify-between items-center group">
+                    <span class="text-sm text-zinc-300">Set Loop End (B)</span>
+                    <span class="kbd">]</span>
+                </div>
+            </div>
+            <div class="p-4 bg-surfaceHighlight border-t border-border text-center">
+                <p class="text-[10px] text-zinc-500">Study OS Pro - Efficiency Tools</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
-    <header class="h-14 border-b border-border bg-background flex items-center justify-between px-4 z-40 flex-shrink-0 transition-all duration-300">
-        <div class="flex items-center gap-4">
-            <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 text-zinc-400 hover:text-white rounded-lg">
+    <header class="h-14 glass flex items-center justify-between px-5 z-40 flex-shrink-0 relative overflow-hidden">
+        <div class="flex items-center gap-5">
+            <button onclick="toggleMobileSidebar()" class="lg:hidden text-zinc-400 hover:text-white transition-colors">
                 <i data-lucide="menu" class="w-5 h-5"></i>
             </button>
             <div class="flex items-center gap-3 cursor-pointer group" onclick="renderDashboard()">
-                <div class="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
-                    <i data-lucide="zap" class="w-4 h-4 text-white fill-current"></i>
+                <div class="relative">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-600 to-accent-400 flex items-center justify-center shadow-lg shadow-accent-500/20 group-hover:shadow-accent-500/40 transition-shadow">
+                        <i data-lucide="zap" class="w-4 h-4 text-white fill-white"></i>
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-black rounded-full flex items-center justify-center">
+                        <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                    </div>
                 </div>
                 <div>
-                    <h1 class="text-sm font-bold text-white tracking-tight">STUDY<span class="text-primary-500">OS</span></h1>
+                    <h1 class="text-sm font-display font-bold text-white tracking-tight leading-none">STUDY<span class="text-accent-400">OS</span></h1>
+                    <p class="text-[10px] text-zinc-500 font-mono leading-none mt-1">PRO EDITION</p>
                 </div>
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
-            <!-- Hidden Import Input -->
+        <!-- Center: Clock & Streak -->
+        <div class="hidden md:flex items-center gap-6">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-border">
+                <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-500 fill-orange-500"></i>
+                <span class="text-xs font-bold text-zinc-300">Streak: <span id="streak-count" class="text-white">1</span></span>
+            </div>
+            <div class="text-xs font-mono text-zinc-500" id="clock-display">00:00</div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="toggleShortcuts()" class="p-2 text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors" title="Keyboard Shortcuts (?)">
+                <i data-lucide="keyboard" class="w-4 h-4"></i>
+            </button>
+
+            <button onclick="toggleCmdPalette()" class="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs bg-surface border border-border rounded-lg text-zinc-400 hover:text-white hover:border-zinc-600 transition-all group">
+                <i data-lucide="search" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
+                <span>Search</span>
+                <span class="kbd ml-1">⌘K</span>
+            </button>
+            
+            <div class="h-4 w-[1px] bg-border mx-1"></div>
+
+            <button onclick="document.getElementById('import-input').click()" class="p-2 text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors" title="Import Data">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+            </button>
             <input type="file" id="import-input" accept=".json" class="hidden" onchange="processImport(this)">
             
-            <button onclick="document.getElementById('import-input').click()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors border border-transparent hover:border-border">
-                <i data-lucide="upload" class="w-3.5 h-3.5"></i> 
-                <span class="hidden sm:inline">Import</span>
-            </button>
-            <button onclick="exportData()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors border border-transparent hover:border-border">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">Backup</span>
+            <button onclick="exportData()" class="p-2 text-zinc-400 hover:text-white hover:bg-surfaceHighlight rounded-lg transition-colors" title="Backup Data">
+                <i data-lucide="download" class="w-4 h-4"></i>
             </button>
         </div>
     </header>
@@ -130,225 +391,315 @@
     <div class="flex flex-1 overflow-hidden relative">
         
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-surface border-r border-border flex flex-col flex-shrink-0 z-30 transition-all duration-300 absolute lg:static h-full transform -translate-x-full lg:translate-x-0">
-            <div class="p-3">
-                <button onclick="renderDashboard()" id="nav-dash" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-colors text-white bg-surfaceHighlight border border-border">
-                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+        <aside id="sidebar" class="w-64 bg-surface/50 backdrop-blur-md border-r border-border flex flex-col flex-shrink-0 z-30 transition-all duration-300 absolute lg:static h-full -translate-x-full lg:translate-x-0">
+            <div class="p-4">
+                <button onclick="renderDashboard()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-white bg-gradient-to-r from-zinc-800 to-zinc-900 border border-zinc-700/50 hover:border-zinc-600 shadow-sm group">
+                    <i data-lucide="layout-grid" class="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors"></i>
                     DASHBOARD
                 </button>
             </div>
-            <div class="px-4 pt-2 pb-2 flex items-center justify-between group">
-                <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider group-hover:text-zinc-300 transition-colors">FOLDERS</span>
+            
+            <div class="px-5 pt-2 pb-2 flex items-center justify-between">
+                <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Library</span>
                 <button onclick="openModal('folder')" class="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-surfaceHighlight rounded" title="New Folder">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 </button>
             </div>
-            <div id="sidebar-list" class="flex-1 overflow-y-auto px-2 pb-4 space-y-1 custom-scrollbar">
-                <!-- List -->
+
+            <div id="sidebar-list" class="flex-1 overflow-y-auto px-3 pb-4 space-y-0.5 custom-scrollbar">
+                <!-- Folders injected here -->
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-border mt-auto">
+                <div class="flex items-center justify-between text-[10px] text-zinc-500">
+                    <span>Storage</span>
+                    <span id="storage-usage">...</span>
+                </div>
+                <div class="w-full h-1 bg-zinc-800 rounded-full mt-2 overflow-hidden">
+                    <div id="storage-bar" class="h-full bg-zinc-600 rounded-full" style="width: 0%"></div>
+                </div>
             </div>
         </aside>
 
-        <!-- Main Content Area (Flex container) -->
-        <div class="flex-1 flex flex-col relative min-w-0 bg-background z-0">
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col relative min-w-0 bg-bg z-0">
             
             <!-- VIEW: DASHBOARD -->
-            <main id="view-dashboard" class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10">
+            <main id="view-dashboard" class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10 custom-scrollbar">
                 <div class="max-w-7xl mx-auto space-y-8 animate-slide-up">
                     
-                    <!-- Continue Watching Hero -->
-                    <div id="hero-section" class="hidden relative group rounded-2xl overflow-hidden border border-border bg-surface">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-900/20 to-transparent"></div>
-                        <div class="relative p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary-500 text-white">Continue</span>
+                    <!-- Welcome / Hero -->
+                    <div id="hero-section" class="hidden relative group rounded-2xl overflow-hidden border border-border bg-[#0E0E10] shadow-2xl">
+                        <!-- Decorative BG -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-accent-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                        
+                        <div class="relative p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-accent-500 animate-pulse"></span>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-accent-400">Resume Learning</span>
                                 </div>
-                                <h2 id="hero-title" class="text-2xl font-bold text-white mb-1">Folder Name</h2>
-                                <p id="hero-sub" class="text-zinc-400 text-sm font-mono">Lecture Title</p>
+                                <h2 id="hero-title" class="text-3xl font-display font-bold text-white tracking-tight">Folder Name</h2>
+                                <p id="hero-sub" class="text-zinc-400 text-sm font-mono flex items-center gap-2">
+                                    <i data-lucide="play-circle" class="w-4 h-4"></i> Lecture Title
+                                </p>
                             </div>
-                            <button onclick="resumeLast()" class="px-6 py-3 bg-white text-black hover:bg-zinc-200 rounded-lg text-sm font-bold shadow-xl shadow-white/5 transition-transform hover:scale-105 flex items-center gap-2">
+                            <button onclick="resumeLast()" class="px-8 py-3.5 bg-white text-black hover:bg-zinc-200 rounded-xl text-sm font-bold shadow-xl shadow-white/5 transition-all hover:scale-105 hover:shadow-white/10 flex items-center gap-2.5">
                                 <i data-lucide="play" class="w-4 h-4 fill-current"></i> Resume
                             </button>
                         </div>
                     </div>
 
-                    <!-- Grid -->
-                    <div id="dash-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
-                    
-                    <!-- Empty State -->
-                    <div id="dash-empty" class="hidden flex-col items-center justify-center py-20 border-2 border-dashed border-border rounded-xl">
-                        <div class="w-12 h-12 bg-surfaceHighlight rounded-full flex items-center justify-center mb-4 text-zinc-600">
-                            <i data-lucide="folder" class="w-6 h-6"></i>
+                    <!-- Stats Row -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-surface/50 border border-border rounded-xl p-4">
+                            <div class="text-zinc-500 text-[10px] font-bold uppercase mb-1">Total Folders</div>
+                            <div class="text-2xl font-display font-bold text-white" id="stat-folders">0</div>
                         </div>
-                        <p class="text-zinc-400 text-sm">No folders yet. Create one or import data.</p>
+                        <div class="bg-surface/50 border border-border rounded-xl p-4">
+                            <div class="text-zinc-500 text-[10px] font-bold uppercase mb-1">Lectures</div>
+                            <div class="text-2xl font-display font-bold text-white" id="stat-videos">0</div>
+                        </div>
+                        <div class="bg-surface/50 border border-border rounded-xl p-4">
+                            <div class="text-zinc-500 text-[10px] font-bold uppercase mb-1">Completed</div>
+                            <div class="text-2xl font-display font-bold text-emerald-400" id="stat-completed">0</div>
+                        </div>
+                        <div class="bg-surface/50 border border-border rounded-xl p-4">
+                            <div class="text-zinc-500 text-[10px] font-bold uppercase mb-1">Completion</div>
+                            <div class="text-2xl font-display font-bold text-accent-400" id="stat-percent">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Grid -->
+                    <h3 class="text-sm font-bold text-zinc-400 uppercase tracking-widest pl-1">Your Courses</h3>
+                    <div id="dash-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+
+                    <!-- Empty State -->
+                    <div id="dash-empty" class="hidden flex-col items-center justify-center py-24 border border-dashed border-zinc-800 rounded-2xl bg-surface/20">
+                        <div class="w-16 h-16 bg-surfaceHighlight rounded-2xl flex items-center justify-center mb-4 text-zinc-600 shadow-inner">
+                            <i data-lucide="folder-plus" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">No courses found</h3>
+                        <p class="text-zinc-500 text-sm mb-6">Create a folder to start organizing your lectures.</p>
+                        <button onclick="openModal('folder')" class="px-5 py-2.5 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-sm font-medium transition-colors">
+                            Create First Folder
+                        </button>
                     </div>
                 </div>
             </main>
 
-            <!-- VIEW: PLAYER (Initially Hidden) -->
+            <!-- VIEW: PLAYER -->
             <main id="view-player" class="hidden flex-1 flex flex-col h-full absolute inset-0 bg-black z-20">
-                
                 <div class="flex-1 flex flex-row min-h-0">
+                    
                     <!-- Video Stage -->
-                    <div class="flex-1 flex flex-col relative bg-black min-w-0">
+                    <div class="flex-1 flex flex-col relative bg-[#050505] min-w-0">
                         
-                        <!-- Video Container -->
-                        <div id="video-container" class="flex-1 relative bg-black flex items-center justify-center group overflow-hidden">
-                            <div id="yt-player-mount" class="w-full h-full relative z-10"></div>
+                        <!-- Video Wrapper -->
+                        <!-- Removed overflow-hidden to allow Ambient glow to bleed -->
+                        <div id="video-container" class="flex-1 relative flex items-center justify-center group">
+                            <!-- Ambient Glow Element -->
+                            <div class="ambient-glow"></div>
+
+                            <div id="video-wrapper" class="w-full h-full relative z-10 transition-all duration-500">
+                                <div id="yt-player-mount" class="w-full h-full"></div>
+                            </div>
+                            
                             <!-- Drag Drop Overlay -->
-                            <div id="drag-overlay" class="absolute inset-0 z-50 bg-primary-500/10 hidden backdrop-blur-sm border-4 border-dashed border-primary-500/50 m-6 rounded-2xl flex items-center justify-center text-primary-200 font-bold text-xl">
-                                Drop Video Here
+                            <div id="drag-overlay" class="absolute inset-0 z-[60] bg-accent-500/10 hidden backdrop-blur-sm border-4 border-dashed border-accent-500/50 m-8 rounded-2xl flex flex-col items-center justify-center text-accent-200 animate-pulse">
+                                <i data-lucide="download-cloud" class="w-12 h-12 mb-4"></i>
+                                <span class="font-bold text-2xl">Drop Video Here</span>
                             </div>
                         </div>
 
                         <!-- Controls Deck -->
-                        <div id="player-controls" class="bg-surface border-t border-border flex flex-col z-20 flex-shrink-0 transition-all duration-300">
-                            
-                            <!-- Top Bar: Title & View Modes -->
-                            <div class="flex items-center justify-between px-4 py-2 border-b border-border/50">
-                                <div class="flex items-center gap-3 min-w-0 mr-4">
-                                    <button onclick="renderDashboard()" class="p-1.5 hover:bg-surfaceHighlight rounded-lg text-zinc-400 hover:text-white transition-colors" title="Back to Dashboard">
-                                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                                    </button>
-                                    <div class="min-w-0">
-                                        <h2 id="player-title" class="text-xs font-bold text-white truncate">Select Video</h2>
-                                        <p id="player-meta" class="text-[10px] text-zinc-500 truncate font-mono">--</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-1 bg-surfaceHighlight/50 rounded-lg p-1 border border-border">
-                                    <button onclick="toggleInvert()" id="btn-invert" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight" title="Invert Colors">
-                                        <i data-lucide="contrast" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="toggleCinema()" id="btn-cinema" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight" title="Cinema Mode">
-                                        <i data-lucide="moon" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="toggleTheater()" id="btn-theater" class="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-surfaceHighlight" title="Theater Mode">
-                                        <i data-lucide="panel-right-close" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                    <button onclick="toggleFocus()" id="btn-focus" class="p-1.5 rounded text-zinc-400 hover:text-primary-400 hover:bg-surfaceHighlight" title="Focus Mode">
-                                        <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
-                                    </button>
-                                </div>
+                        <div id="player-controls" class="bg-surface border-t border-border flex flex-col z-20 flex-shrink-0 relative">
+                            <!-- Progress Bar for Loop (Visual only for now) -->
+                            <div id="loop-bar-container" class="w-full h-1 bg-black hidden">
+                                <div id="loop-bar" class="h-full bg-accent-500 w-0"></div>
                             </div>
 
-                            <!-- Bottom Bar: Slider & Repeater -->
-                            <div class="flex items-center justify-between px-4 py-3 bg-surfaceHighlight/10 gap-6 overflow-x-auto">
-                                
-                                <!-- Speed Slider -->
-                                <div class="flex items-center gap-3 flex-1 max-w-xs">
-                                    <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider whitespace-nowrap">Speed <span id="speed-val" class="text-white ml-1 font-mono">1.0x</span></div>
-                                    <input type="range" min="0.5" max="4.0" step="0.1" value="1.0" oninput="setSpeed(this.value)" class="flex-1">
-                                </div>
-
-                                <!-- Repeater -->
-                                <div class="flex items-center gap-2 border-l border-border pl-4">
-                                    <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Loop</span>
-                                    <div class="flex items-center bg-surface border border-border rounded overflow-hidden">
-                                        <button onclick="setLoopPoint('A')" id="btn-loop-a" class="px-3 py-1 text-[10px] font-mono hover:bg-primary-500/20 hover:text-primary-400 transition-colors border-r border-border text-zinc-400">A</button>
-                                        <button onclick="setLoopPoint('B')" id="btn-loop-b" class="px-3 py-1 text-[10px] font-mono hover:bg-primary-500/20 hover:text-primary-400 transition-colors border-r border-border text-zinc-400">B</button>
-                                        <button onclick="toggleLoop()" id="btn-loop-toggle" class="px-2 py-1 text-zinc-500 hover:text-white hover:bg-surfaceHighlight transition-colors">
-                                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
-                                        </button>
+                            <div class="flex items-center justify-between px-5 py-3">
+                                <!-- Left: Title & Nav -->
+                                <div class="flex items-center gap-4 min-w-0 flex-1 mr-8">
+                                    <button onclick="renderDashboard()" class="p-2 hover:bg-surfaceHighlight rounded-lg text-zinc-400 hover:text-white transition-colors" title="Back (Esc)">
+                                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                    </button>
+                                    <div class="min-w-0">
+                                        <h2 id="player-title" class="text-sm font-bold text-white truncate leading-tight">Select Video</h2>
+                                        <div class="flex items-center gap-2 mt-0.5">
+                                            <span id="player-tag" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-surfaceHighlight text-zinc-400 border border-zinc-800">TAG</span>
+                                            <p id="player-folder" class="text-[11px] text-zinc-500 truncate font-mono hover:text-zinc-300 cursor-pointer">Folder</p>
+                                        </div>
                                     </div>
                                 </div>
 
+                                <!-- Center: Transport -->
+                                <div class="hidden md:flex items-center gap-4">
+                                    <button id="btn-loop-toggle" onclick="toggleLoop()" class="p-2 text-zinc-500 hover:text-white transition-colors" title="Toggle Loop (L)">
+                                        <i data-lucide="repeat" class="w-4 h-4"></i>
+                                    </button>
+                                    
+                                    <!-- A-B Repeater -->
+                                    <div class="flex items-center bg-black/50 border border-border rounded-lg overflow-hidden">
+                                        <button onclick="setLoopPoint('A')" id="btn-loop-a" class="px-3 py-1.5 text-[10px] font-mono hover:bg-accent-500/20 hover:text-accent-400 transition-colors border-r border-border text-zinc-400 font-bold" title="Set Start ( [ )">A</button>
+                                        <button onclick="setLoopPoint('B')" id="btn-loop-b" class="px-3 py-1.5 text-[10px] font-mono hover:bg-accent-500/20 hover:text-accent-400 transition-colors text-zinc-400 font-bold" title="Set End ( ] )">B</button>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Toggles -->
+                                <div class="flex items-center gap-2 ml-8">
+                                    <div class="flex items-center gap-2 mr-4 border-r border-border pr-4">
+                                        <i data-lucide="gauge" class="w-3.5 h-3.5 text-zinc-600"></i>
+                                        <span id="speed-val" class="text-xs font-mono text-zinc-300 w-8 text-right">1.0x</span>
+                                        
+                                        <!-- Improved Speed Slider -->
+                                        <input type="range" id="speed-slider" min="0.5" max="4.0" step="0.1" value="1.0" 
+                                               oninput="setSpeed(this.value)" 
+                                               class="w-24">
+                                    </div>
+
+                                    <button onclick="toggleGlow()" id="btn-glow" class="p-2 rounded-lg text-zinc-400 hover:text-accent-400 hover:bg-surfaceHighlight transition-colors" title="Ambient Glow">
+                                        <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                                    </button>
+                                    
+                                    <button onclick="toggleFocus()" id="btn-focus" class="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-surfaceHighlight transition-colors" title="Focus Mode (Maximize)">
+                                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                                    </button>
+                                    
+                                    <button onclick="toggleTheater()" id="btn-theater" class="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-surfaceHighlight transition-colors hidden sm:block" title="Theater Mode (T)">
+                                        <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Panel (Playlist) -->
-                    <div id="right-panel" class="w-80 bg-surface border-l border-border flex flex-col flex-shrink-0 transition-all duration-300">
-                        <div class="p-3 border-b border-border flex gap-2">
-                            <div class="relative flex-1">
-                                <i data-lucide="search" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-zinc-500"></i>
-                                <input type="text" id="playlist-search" oninput="renderPlaylist()" placeholder="Search..." class="w-full bg-background border border-border rounded-md pl-8 py-2 text-xs text-white focus:outline-none focus:border-primary-500">
+                    <div id="right-panel" class="w-80 bg-surface border-l border-border flex flex-col flex-shrink-0 transition-all duration-300 z-30">
+                        <div class="p-4 border-b border-border flex flex-col gap-3">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Playlist</h3>
+                                <button onclick="openModal('edit-folder')" class="text-zinc-600 hover:text-white transition-colors" title="Folder Settings">
+                                    <i data-lucide="settings-2" class="w-4 h-4"></i>
+                                </button>
                             </div>
-                            <button onclick="openModal('video')" class="p-2 bg-primary-600 hover:bg-primary-500 text-white rounded-md shadow-lg shadow-primary-500/20">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                            </button>
+                            <div class="relative w-full group">
+                                <i data-lucide="search" class="absolute left-3 top-2.5 w-3.5 h-3.5 text-zinc-500 group-focus-within:text-accent-500 transition-colors"></i>
+                                <input type="text" id="playlist-search" oninput="debouncedRenderPlaylist()" placeholder="Filter lectures..." class="w-full bg-[#121214] border border-border rounded-lg pl-9 py-2 text-xs text-white focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500/20 transition-all">
+                            </div>
                         </div>
+
                         <div id="playlist-container" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
-                        <div class="p-2 border-t border-border bg-surface flex justify-between items-center px-4">
-                            <span id="playlist-stats" class="text-[10px] text-zinc-500">0/0 Watched</span>
-                            <button onclick="openModal('edit-folder')" class="text-zinc-500 hover:text-white"><i data-lucide="settings-2" class="w-3.5 h-3.5"></i></button>
+
+                        <div class="p-4 border-t border-border bg-surface">
+                            <button onclick="openModal('video')" class="w-full py-2.5 bg-accent-600 hover:bg-accent-500 text-white rounded-lg shadow-lg shadow-accent-500/20 text-xs font-bold flex items-center justify-center gap-2 transition-transform active:scale-95">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Lecture
+                            </button>
                         </div>
                     </div>
                 </div>
-
             </main>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+    <!-- MODALS -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity flex items-center justify-center p-4">
         
         <!-- Add Folder -->
-        <div id="modal-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-1">New Folder</h3>
-            <p class="text-xs text-zinc-500 mb-5">Create a folder to organize lectures.</p>
-            <input type="text" id="inp-folder-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none placeholder-zinc-700 mb-4" placeholder="e.g. Physics - Optics">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white">Cancel</button>
-                <button onclick="createFolder()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium">Create</button>
+        <div id="modal-folder" class="bg-[#0F0F10] border border-border w-full max-w-sm rounded-2xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+            <h3 class="text-lg font-bold text-white mb-1">New Collection</h3>
+            <p class="text-xs text-zinc-500 mb-6">Create a folder to organize your subjects.</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 mb-1.5 block uppercase">Name</label>
+                    <input type="text" id="inp-folder-name" class="w-full bg-black border border-border rounded-lg p-3 text-sm text-white focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500/20 placeholder-zinc-700 transition-all" placeholder="e.g. Electrostatics">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">Cancel</button>
+                    <button onclick="createFolder()" class="px-5 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg text-xs font-bold transition-colors">Create Folder</button>
+                </div>
             </div>
         </div>
 
         <!-- Add Video -->
-        <div id="modal-video" class="bg-surface border border-border w-full max-w-md rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+        <div id="modal-video" class="bg-[#0F0F10] border border-border w-full max-w-md rounded-2xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
             <h3 class="text-lg font-bold text-white mb-1">Add Lecture</h3>
-            <p class="text-xs text-zinc-500 mb-5">Paste a YouTube link.</p>
+            <p class="text-xs text-zinc-500 mb-6">Import content from YouTube.</p>
             <div class="space-y-4">
-                <input type="text" id="inp-video-url" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none" placeholder="https://youtu.be/...">
-                <input type="text" id="inp-video-title" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none" placeholder="Title (Optional)">
                 <div>
-                    <label class="text-[10px] font-bold text-zinc-500 mb-2 block">Tag</label>
+                    <label class="text-[10px] font-bold text-zinc-500 mb-1.5 block uppercase">YouTube URL</label>
+                    <div class="relative">
+                        <i data-lucide="link" class="absolute left-3 top-3 w-4 h-4 text-zinc-600"></i>
+                        <input type="text" id="inp-video-url" class="w-full bg-black border border-border rounded-lg pl-9 p-2.5 text-sm text-white focus:border-accent-500 focus:outline-none transition-all font-mono" placeholder="https://youtu.be/...">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 mb-1.5 block uppercase">Title (Optional)</label>
+                    <input type="text" id="inp-video-title" class="w-full bg-black border border-border rounded-lg p-2.5 text-sm text-white focus:border-accent-500 focus:outline-none" placeholder="e.g. Coulomb's Law">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 mb-2 block uppercase">Category</label>
                     <div class="grid grid-cols-4 gap-2">
                         <button onclick="setTag('Lecture')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="Lecture">Lecture</button>
                         <button onclick="setTag('Concept')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="Concept">Concept</button>
                         <button onclick="setTag('PYQ')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="PYQ">PYQ</button>
-                        <button onclick="setTag('Revision')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="Revision">Revision</button>
+                        <button onclick="setTag('Notes')" class="tag-btn text-xs border rounded-lg py-2 text-zinc-500 border-border hover:bg-surfaceHighlight" data-tag="Notes">Notes</button>
                     </div>
                     <input type="hidden" id="inp-video-tag" value="Lecture">
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
+                <div class="flex justify-end gap-3 pt-4">
                     <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white">Cancel</button>
-                    <button onclick="addVideo()" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-medium">Add Video</button>
+                    <button onclick="addVideo()" class="px-5 py-2 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-accent-500/20">Add Lecture</button>
                 </div>
             </div>
         </div>
 
         <!-- Edit Folder -->
-        <div id="modal-edit-folder" class="bg-surface border border-border w-full max-w-sm rounded-xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
-            <h3 class="text-lg font-bold text-white mb-4">Manage Folder</h3>
-            <input type="text" id="inp-edit-name" class="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-white focus:border-primary-500 focus:outline-none mb-4">
-            <button onclick="deleteCurrentFolder()" class="w-full py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg border border-red-500/20 flex items-center justify-center gap-2 mb-2">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Folder
+        <div id="modal-edit-folder" class="bg-[#0F0F10] border border-border w-full max-w-sm rounded-2xl p-6 shadow-2xl scale-95 opacity-0 transition-all transform hidden">
+            <h3 class="text-lg font-bold text-white mb-4">Folder Settings</h3>
+            <input type="text" id="inp-edit-name" class="w-full bg-black border border-border rounded-lg p-3 text-sm text-white focus:border-accent-500 focus:outline-none mb-6">
+            
+            <button onclick="deleteCurrentFolder()" class="w-full py-3 text-xs font-bold text-red-400 hover:bg-red-500/10 rounded-lg border border-red-500/20 flex items-center justify-center gap-2 mb-2 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Folder
             </button>
-            <div class="flex justify-end gap-2 pt-2 border-t border-border">
+            
+            <div class="flex justify-end gap-3 pt-4 border-t border-border mt-2">
                 <button onclick="closeModals()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white">Cancel</button>
-                <button onclick="saveEditFolder()" class="px-4 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg text-xs font-semibold">Save</button>
+                <button onclick="saveEditFolder()" class="px-5 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg text-xs font-bold">Save Changes</button>
             </div>
         </div>
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 z-[110] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
-        <div class="bg-surface border border-border text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3">
-            <i id="toast-icon" data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
-            <span id="toast-msg" class="text-xs font-medium">Notification</span>
+    <div id="toast" class="fixed bottom-8 right-8 z-[110] transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+        <div class="bg-[#0F0F10] border border-border/50 text-white pl-4 pr-6 py-3.5 rounded-xl shadow-2xl flex items-center gap-4 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-accent-500/5 group-hover:bg-accent-500/10 transition-colors"></div>
+            <div class="w-8 h-8 rounded-full bg-surfaceHighlight flex items-center justify-center relative z-10 border border-border">
+                <i id="toast-icon" data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="flex flex-col relative z-10">
+                <span id="toast-msg" class="text-xs font-bold text-zinc-100">Notification</span>
+            </div>
         </div>
     </div>
 
     <!-- Javascript -->
     <script>
         // --- DATA & STATE ---
-        const DB_KEY = 'jee_os_v4';
-        let db = { folders: [], lastPlayed: null };
+        const DB_KEY = 'jee_os_v4'; 
+        let db = { folders: [], lastPlayed: null, stats: { streak: 0, lastLogin: null } };
+        
+        // Runtime State
         let activeFolderId = null;
         let activeVideoId = null;
-        
         let player = null;
         let ytApiReady = false;
+        
+        // Command Palette State
+        let cmdMatches = [];
+        let cmdSelectedIndex = 0;
         
         // Loop State
         let loopStart = null;
@@ -356,23 +707,66 @@
         let isLooping = false;
         let loopInterval = null;
 
+        // UI State
+        let glowEnabled = false;
+
+        // --- UTILS: PERFORMANCE ---
+        // Debounce utility to stop heavy functions running on every keystroke
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
         // --- INIT ---
         function init() {
-            const saved = localStorage.getItem(DB_KEY);
-            if(saved) {
-                try { db = JSON.parse(saved); } catch(e) { console.error(e); }
-            } else {
-                const fid = uid();
-                db = { folders: [{id: fid, name: 'Physics - Mechanics', videos: []}], lastPlayed: null };
-                save();
-            }
-
+            loadDB();
+            updateStreak();
             renderSidebar();
             renderDashboard();
+            updateClock();
+            setInterval(updateClock, 10000);
+            
+            // Initial scan only. Subsequent updates use scoped scanning.
             lucide.createIcons();
+            
             setupDragDrop();
+            setupKeyboardShortcuts();
+            
+            // Add Enter key listeners
+            document.getElementById('inp-folder-name').addEventListener('keydown', (e) => { if(e.key === 'Enter') createFolder(); });
+            document.getElementById('inp-video-url').addEventListener('keydown', (e) => { if(e.key === 'Enter') addVideo(); });
+            
+            // Command Palette Input Listeners
+            const searchInput = document.getElementById('cmd-input');
+            
+            // 1. Debounced Search
+            searchInput.oninput = debounce((e) => {
+                cmdSelectedIndex = 0; // Reset selection on new query
+                renderCmdResults(e.target.value);
+            }, 300);
 
-            // Load Youtube API Robustly
+            // 2. Navigation Handler (Arrows + Enter)
+            searchInput.addEventListener('keydown', (e) => {
+                if (cmdMatches.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault(); // Stop cursor moving
+                    cmdSelectedIndex = (cmdSelectedIndex + 1) % cmdMatches.length;
+                    updateCmdVisuals();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault(); // Stop cursor moving
+                    cmdSelectedIndex = (cmdSelectedIndex - 1 + cmdMatches.length) % cmdMatches.length;
+                    updateCmdVisuals();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    executeCmdAction(cmdMatches[cmdSelectedIndex]);
+                }
+            });
+
+            // Load Youtube API
             if (!window.YT) {
                 const tag = document.createElement('script');
                 tag.src = "https://www.youtube.com/iframe_api";
@@ -385,67 +779,161 @@
             ytApiReady = true;
         }
 
-        // --- CORE FUNCTIONS ---
-        function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-        function uid() { return Math.random().toString(36).substr(2, 9); }
+        function loadDB() {
+            const saved = localStorage.getItem(DB_KEY);
+            if(saved) {
+                try { 
+                    const parsed = JSON.parse(saved);
+                    db = { ...db, ...parsed };
+                    if (!Array.isArray(db.folders)) db.folders = [];
+                    if(!db.stats) db.stats = { streak: 0, lastLogin: null };
+                } catch(e) { 
+                    console.error("Corrupt DB", e); 
+                    toast('Database corrupted, using safe mode', 'error');
+                }
+            } else {
+                const fid = uid();
+                db.folders = [{id: fid, name: 'Physics - Mechanics', videos: []}];
+                save();
+            }
+            updateStorageBar();
+        }
+
+        function save() { 
+            try {
+                localStorage.setItem(DB_KEY, JSON.stringify(db)); 
+                updateStorageBar();
+            } catch(e) {
+                toast('Save Failed: Storage Full', 'error');
+                console.error(e);
+            }
+        }
+        
+        function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
         function getFolder(id) { return db.folders.find(f => f.id === id); }
 
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock-display').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function updateStreak() {
+            const today = new Date().toDateString();
+            if(db.stats.lastLogin !== today) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if(db.stats.lastLogin === yesterday.toDateString()) {
+                    db.stats.streak++;
+                } else if(db.stats.lastLogin !== today) {
+                    db.stats.streak = 1;
+                }
+                db.stats.lastLogin = today;
+                save();
+            }
+            document.getElementById('streak-count').innerText = db.stats.streak;
+        }
+
+        // --- DASHBOARD RENDER ---
         function renderDashboard() {
-            // Layout Swap
+            const sidebar = document.getElementById('sidebar');
+            const theaterBtn = document.getElementById('btn-theater');
+            
+            document.body.classList.remove('focus-mode');
+            if(sidebar.classList.contains('w-0')) {
+                sidebar.classList.remove('w-0', 'overflow-hidden', 'opacity-0', 'border-0');
+                sidebar.classList.add('w-64', 'border-r');
+                if(theaterBtn) theaterBtn.classList.remove('text-accent-400', 'bg-accent-500/10');
+            }
+
             document.getElementById('view-dashboard').classList.remove('hidden');
             document.getElementById('view-player').classList.add('hidden');
-            activeFolderId = null; // Clear active context
-            
-            // Render Grid
+            document.getElementById('cmd-palette-overlay').classList.add('hidden');
+            activeFolderId = null;
+
             const grid = document.getElementById('dash-grid');
             grid.innerHTML = '';
             
             if(db.folders.length === 0) document.getElementById('dash-empty').classList.remove('hidden');
             else document.getElementById('dash-empty').classList.add('hidden');
 
-            // Hero Section Logic
+            let totalVids = 0, doneVids = 0;
+            
             const hero = document.getElementById('hero-section');
+            let hasResume = false;
             if(db.lastPlayed) {
                 const f = getFolder(db.lastPlayed.folderId);
                 const v = f ? f.videos.find(x => x.id === db.lastPlayed.videoId) : null;
                 if(f && v) {
                     hero.classList.remove('hidden');
                     document.getElementById('hero-title').innerText = f.name;
-                    document.getElementById('hero-sub').innerText = v.title;
-                } else hero.classList.add('hidden');
-            } else hero.classList.add('hidden');
+                    document.getElementById('hero-sub').innerHTML = `<i data-lucide="play-circle" class="w-4 h-4"></i> ${escapeHtml(v.title)}`;
+                    hasResume = true;
+                }
+            }
+            if(!hasResume) hero.classList.add('hidden');
 
-            db.folders.forEach(f => {
+            db.folders.forEach((f, idx) => {
                 const count = f.videos.length;
                 const done = f.videos.filter(v => v.watched).length;
+                totalVids += count; doneVids += done;
                 const percent = count === 0 ? 0 : Math.round((done/count)*100);
+                
+                const radius = 18;
+                const circum = 2 * Math.PI * radius;
+                const offset = circum - (percent / 100) * circum;
 
                 const el = document.createElement('div');
-                el.className = "group bg-surface border border-border hover:border-primary-500/30 rounded-xl p-5 cursor-pointer transition-all hover:-translate-y-1";
-                el.onclick = () => openFolder(f.id);
+                el.draggable = true;
+                el.ondragstart = (e) => dragStart(e, idx, 'folder');
+                el.ondragover = dragOver;
+                el.ondrop = (e) => drop(e, idx, 'folder');
+
+                el.className = "group bg-surface/40 backdrop-blur-sm border border-border hover:border-accent-500/50 rounded-2xl p-5 cursor-pointer transition-all hover:-translate-y-1 relative overflow-hidden";
+                el.onclick = (e) => {
+                    if(dragType === 'folder' && dragIdx !== null) return;
+                    openFolder(f.id);
+                };
                 el.innerHTML = `
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-10 h-10 rounded-lg bg-surfaceHighlight flex items-center justify-center text-zinc-400 group-hover:text-primary-400 group-hover:bg-primary-500/10 transition-colors">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-accent-600/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-accent-600/10 transition-colors"></div>
+                    <div class="flex justify-between items-start mb-6 relative z-10">
+                        <div class="w-12 h-12 rounded-xl bg-surfaceHighlight border border-white/5 flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:bg-accent-500 group-hover:border-accent-400 group-hover:shadow-lg group-hover:shadow-accent-500/20 transition-all duration-300">
                             <i data-lucide="folder" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-[10px] font-mono bg-surfaceHighlight border border-border px-2 py-1 rounded-md text-zinc-500">${done}/${count}</span>
+                        
+                        <div class="relative w-12 h-12 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90">
+                                <circle cx="24" cy="24" r="${radius}" stroke="#27272a" stroke-width="3" fill="transparent"/>
+                                <circle cx="24" cy="24" r="${radius}" stroke="${percent===100?'#10b981':'#6366f1'}" stroke-width="3" fill="transparent" stroke-dasharray="${circum}" stroke-dashoffset="${offset}" class="transition-all duration-1000 ease-out"/>
+                            </svg>
+                            <span class="absolute text-[9px] font-bold text-zinc-400">${percent}%</span>
+                        </div>
                     </div>
-                    <h3 class="font-bold text-zinc-200 group-hover:text-white truncate mb-4">${escapeHtml(f.name)}</h3>
-                    <div class="w-full bg-surfaceHighlight h-1 rounded-full overflow-hidden">
-                        <div class="bg-primary-500 h-full rounded-full" style="width: ${percent}%"></div>
-                    </div>
+                    
+                    <h3 class="font-bold text-zinc-100 group-hover:text-white truncate text-base mb-1 relative z-10">${escapeHtml(f.name)}</h3>
+                    <p class="text-xs text-zinc-500 font-mono relative z-10">${done} / ${count} Completed</p>
                 `;
                 grid.appendChild(el);
             });
-            lucide.createIcons();
+
+            document.getElementById('stat-folders').innerText = db.folders.length;
+            document.getElementById('stat-videos').innerText = totalVids;
+            document.getElementById('stat-completed').innerText = doneVids;
+            const globalPercent = totalVids === 0 ? 0 : Math.round((doneVids/totalVids)*100);
+            document.getElementById('stat-percent').innerText = globalPercent + '%';
+
+            // PERFORMANCE: Only scan the grid for icons, not the whole body
+            lucide.createIcons({ root: grid });
+            // Also scan hero because we updated it
+            if(hasResume) lucide.createIcons({ root: hero });
             
-            // Clean up player
             if(player) {
-                player.destroy();
+                try{ player.destroy(); } catch(e){}
                 player = null;
             }
         }
 
+        // --- PLAYER LOGIC ---
         function openFolder(id) {
             activeFolderId = id;
             document.getElementById('view-dashboard').classList.add('hidden');
@@ -453,7 +941,6 @@
             renderSidebar();
             renderPlaylist();
 
-            // Auto-load logic if not resuming
             if(!activeVideoId) {
                 const f = getFolder(id);
                 if(f.videos.length > 0) loadVideo(f.videos[0].id);
@@ -464,10 +951,10 @@
         function loadVideo(id) {
             activeVideoId = id;
             if(!id) {
-                document.getElementById('yt-player-mount').innerHTML = '<div class="w-full h-full flex items-center justify-center text-zinc-700"><i data-lucide="play" class="w-12 h-12"></i></div>';
+                document.getElementById('yt-player-mount').innerHTML = '<div class="w-full h-full flex flex-col items-center justify-center text-zinc-700 gap-4"><i data-lucide="monitor-off" class="w-16 h-16 opacity-50"></i><p class="text-sm font-mono">No lecture selected</p></div>';
                 document.getElementById('player-title').innerText = "Select Video";
-                document.getElementById('player-meta').innerText = "--";
-                lucide.createIcons();
+                document.getElementById('player-folder').innerText = getFolder(activeFolderId)?.name || "";
+                lucide.createIcons(); // Rarely called so fine
                 return;
             }
 
@@ -475,7 +962,9 @@
             const v = f.videos.find(x => x.id === id);
             
             document.getElementById('player-title').innerText = v.title;
-            document.getElementById('player-meta').innerText = `${v.tag} • ${f.name}`;
+            document.getElementById('player-folder').innerText = f.name;
+            document.getElementById('player-tag').innerText = v.tag;
+            
             db.lastPlayed = { folderId: activeFolderId, videoId: id };
             save();
 
@@ -484,36 +973,46 @@
                 return;
             }
 
-            // Always create a fresh player to avoid state corruption from extensions
-            if(player) player.destroy();
-            
-            // Ensure mount point exists
-            const container = document.getElementById('video-container');
-            if(!document.getElementById('yt-player-mount')) {
-                const mount = document.createElement('div');
-                mount.id = 'yt-player-mount';
-                container.prepend(mount);
+            if(player) {
+                try { player.loadVideoById(v.ytId); } 
+                catch(e) { createPlayer(v.ytId); }
+            } else {
+                createPlayer(v.ytId);
             }
-
-            player = new YT.Player('yt-player-mount', {
-                height: '100%',
-                width: '100%',
-                videoId: v.ytId,
-                playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1 },
-                events: {
-                    'onReady': onPlayerReady
-                }
-            });
             renderPlaylist();
         }
 
+        function createPlayer(ytId) {
+            const container = document.getElementById('video-wrapper');
+            container.innerHTML = '<div id="yt-player-mount" class="w-full h-full"></div>';
+            
+            player = new YT.Player('yt-player-mount', {
+                height: '100%',
+                width: '100%',
+                videoId: ytId,
+                playerVars: { 'autoplay': 1, 'rel': 0, 'modestbranding': 1, 'playsinline': 1 },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
         function onPlayerReady(event) {
-            // Restore speed setting
-            const speedInput = document.querySelector('input[type="range"]');
+            const speedInput = document.getElementById('speed-slider');
             event.target.setPlaybackRate(parseFloat(speedInput.value));
+            // Initialize slider fill on load
+            setSpeed(speedInput.value);
+        }
+
+        function onPlayerStateChange(event) {
+            // Can add auto-next logic here later
         }
 
         // --- PLAYLIST UI ---
+        // Debounced version for search input
+        const debouncedRenderPlaylist = debounce(() => renderPlaylist(), 300);
+
         function renderPlaylist() {
             const list = document.getElementById('playlist-container');
             list.innerHTML = '';
@@ -522,105 +1021,383 @@
 
             const query = document.getElementById('playlist-search').value.toLowerCase();
             const videos = f.videos.filter(v => v.title.toLowerCase().includes(query));
-            
-            const done = f.videos.filter(v => v.watched).length;
-            document.getElementById('playlist-stats').innerText = `${done}/${f.videos.length} Watched`;
 
             videos.forEach((v, idx) => {
                 const isActive = v.id === activeVideoId;
                 const el = document.createElement('div');
                 el.draggable = true;
-                el.ondragstart = (e) => dragStart(e, idx);
+                el.ondragstart = (e) => dragStart(e, idx, 'video');
                 el.ondragover = dragOver;
-                el.ondrop = (e) => drop(e, idx);
+                el.ondrop = (e) => drop(e, idx, 'video');
                 
-                el.className = `p-3 rounded-lg cursor-pointer border flex gap-3 transition-all mb-1 ${isActive ? 'bg-primary-500/10 border-primary-500/30' : 'bg-surface border-transparent hover:border-border'}`;
+                el.className = `group p-3 rounded-lg cursor-pointer border flex gap-3 transition-all mb-1 relative overflow-hidden ${isActive ? 'bg-accent-500/10 border-accent-500/30' : 'bg-surface border-transparent hover:border-border hover:bg-surfaceHighlight/50'}`;
                 el.onclick = (e) => {
                     if(!e.target.closest('.no-trigger')) loadVideo(v.id);
                 };
 
                 el.innerHTML = `
-                    <div class="no-trigger pt-1">
-                        <label class="cursor-pointer">
+                    <div class="no-trigger pt-1 z-10">
+                        <label class="cursor-pointer relative">
                             <input type="checkbox" class="hidden" ${v.watched ? 'checked' : ''} onchange="toggleWatched('${v.id}')">
-                            <div class="w-4 h-4 rounded border border-zinc-600 hover:border-zinc-400 bg-transparent flex items-center justify-center transition-colors">
-                                ${v.watched ? '<div class="w-2.5 h-2.5 bg-emerald-500 rounded-sm"></div>' : ''}
+                            <div class="w-4 h-4 rounded border ${v.watched ? 'border-emerald-500 bg-emerald-500' : 'border-zinc-600 hover:border-zinc-400'} flex items-center justify-center transition-all">
+                                ${v.watched ? '<i data-lucide="check" class="w-3 h-3 text-black"></i>' : ''}
                             </div>
                         </label>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="text-xs font-medium ${isActive ? 'text-primary-200' : 'text-zinc-300'} truncate mb-1">${escapeHtml(v.title)}</h4>
+                    <div class="flex-1 min-w-0 z-10">
+                        <h4 class="text-xs font-medium ${isActive ? 'text-accent-200' : 'text-zinc-300'} truncate mb-1">${escapeHtml(v.title)}</h4>
                         <div class="flex items-center gap-2">
-                             <span class="text-[9px] px-1.5 py-0.5 rounded border border-border text-zinc-500 bg-background">${v.tag}</span>
-                             ${isActive ? '<span class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse"></span>' : ''}
+                            <span class="text-[9px] px-1.5 py-0.5 rounded border border-white/5 text-zinc-500 bg-black/30">${v.tag}</span>
+                            ${isActive ? '<span class="flex items-center gap-1 text-[9px] text-accent-400"><span class="w-1.5 h-1.5 bg-accent-500 rounded-full animate-pulse"></span> Playing</span>' : ''}
                         </div>
                     </div>
-                    <div class="no-trigger opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button onclick="deleteVideo('${v.id}')" class="text-zinc-600 hover:text-red-400"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                    <div class="no-trigger opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center">
+                         <button onclick="deleteVideo('${v.id}')" class="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
                     </div>
                 `;
                 list.appendChild(el);
             });
-            lucide.createIcons();
+            
+            // PERFORMANCE: Only scan playlist container
+            lucide.createIcons({ root: list });
         }
 
         function renderSidebar() {
             const list = document.getElementById('sidebar-list');
             list.innerHTML = '';
             
-            db.folders.forEach(f => {
+            db.folders.forEach((f, idx) => {
                 const isActive = f.id === activeFolderId;
                 const el = document.createElement('div');
-                el.className = `px-3 py-2 rounded-lg cursor-pointer text-xs font-medium flex items-center gap-2 mb-0.5 transition-colors ${isActive ? 'text-white bg-surfaceHighlight border-r-2 border-primary-500' : 'text-zinc-500 hover:text-zinc-300 hover:bg-surfaceHighlight/50'}`;
+                el.draggable = true;
+                el.ondragstart = (e) => dragStart(e, idx, 'folder');
+                el.ondragover = dragOver;
+                el.ondrop = (e) => drop(e, idx, 'folder');
+
+                el.className = `px-3 py-2.5 mx-2 rounded-lg cursor-pointer text-xs font-medium flex items-center gap-3 transition-all ${isActive ? 'text-white bg-surfaceHighlight border border-white/5 shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-surfaceHighlight/30'}`;
                 el.onclick = () => openFolder(f.id);
                 el.innerHTML = `
-                    <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="${isActive ? 'folder-open' : 'folder'}" class="w-3.5 h-3.5 ${isActive ? 'text-accent-400' : ''}"></i>
                     <span class="truncate flex-1">${escapeHtml(f.name)}</span>
-                    ${f.videos.length > 0 ? `<span class="text-[9px] opacity-50">${f.videos.length}</span>` : ''}
+                    ${f.videos.length > 0 ? `<span class="text-[9px] opacity-40 font-mono">${f.videos.length}</span>` : ''}
                 `;
                 list.appendChild(el);
             });
-            lucide.createIcons();
+            
+            // PERFORMANCE: Only scan sidebar
+            lucide.createIcons({ root: list });
         }
 
-        // --- PLAYER FEATURES ---
+        function updateStorageBar() {
+            const str = JSON.stringify(db);
+            const bytes = new Blob([str]).size;
+            const limit = 5000000;
+            const percent = (bytes / limit) * 100;
+            document.getElementById('storage-bar').style.width = Math.min(percent, 100) + '%';
+            document.getElementById('storage-usage').innerText = (bytes/1024).toFixed(1) + ' KB';
+        }
+
+        // --- FEATURES & SHORTCUTS ---
+        
         function setSpeed(val) {
-            document.getElementById('speed-val').innerText = parseFloat(val).toFixed(1) + 'x';
-            if(player && player.setPlaybackRate) player.setPlaybackRate(parseFloat(val));
+            const floatVal = parseFloat(val);
+            document.getElementById('speed-val').innerText = floatVal.toFixed(1) + 'x'; // 1 decimal for 0.1 steps
+            if(player && player.setPlaybackRate) player.setPlaybackRate(floatVal);
+            
+            // Update Slider Fill Logic
+            const slider = document.getElementById('speed-slider');
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            const percent = ((floatVal - min) / (max - min)) * 100;
+            
+            // Set gradient background to visually fill the track
+            slider.style.background = `linear-gradient(to right, #6366f1 0%, #6366f1 ${percent}%, #27272a ${percent}%, #27272a 100%)`;
         }
 
-        function toggleCinema() {
-            document.body.classList.toggle('cinema-mode');
-            document.getElementById('btn-cinema').classList.toggle('text-white');
-            document.getElementById('btn-cinema').classList.toggle('bg-primary-500/20');
+        function toggleFocus() {
+            const isFocus = document.body.classList.toggle('focus-mode');
+            const btn = document.getElementById('btn-focus');
+
+            if (isFocus) {
+                btn.classList.add('text-accent-400', 'bg-accent-500/10');
+                btn.classList.remove('text-zinc-400');
+                toast('Focus Mode On');
+            } else {
+                btn.classList.remove('text-accent-400', 'bg-accent-500/10');
+                btn.classList.add('text-zinc-400');
+                
+                const sidebar = document.getElementById('sidebar');
+                if(sidebar.classList.contains('w-0')) {
+                   sidebar.classList.remove('w-0', 'overflow-hidden', 'opacity-0', 'border-0');
+                   sidebar.classList.add('w-64', 'border-r');
+                   document.getElementById('btn-theater').classList.remove('text-accent-400', 'bg-accent-500/10');
+                }
+                
+                toast('Focus Mode Off');
+            }
+            window.dispatchEvent(new Event('resize'));
         }
 
-        function toggleInvert() {
-            const iframe = document.querySelector('iframe');
-            if(iframe) {
-                iframe.classList.toggle('filter-invert');
-                document.getElementById('btn-invert').classList.toggle('text-primary-400');
+        function toggleGlow() {
+            glowEnabled = !glowEnabled;
+            const container = document.getElementById('video-container');
+            const btn = document.getElementById('btn-glow');
+            
+            if(glowEnabled) {
+                container.classList.add('glow-active');
+                btn.classList.add('text-accent-400', 'bg-accent-500/10');
+                btn.classList.remove('text-zinc-400');
+            } else {
+                container.classList.remove('glow-active');
+                btn.classList.remove('text-accent-400', 'bg-accent-500/10');
+                btn.classList.add('text-zinc-400');
             }
         }
 
         function toggleTheater() {
-            const panel = document.getElementById('right-panel');
-            if(panel.classList.contains('w-0')) {
-                panel.classList.remove('w-0', 'border-0', 'overflow-hidden');
-                panel.classList.add('w-80', 'border-l');
-                document.getElementById('btn-theater').classList.remove('text-primary-400');
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.getElementById('btn-theater');
+            
+            const isHidden = sidebar.classList.contains('w-0');
+            
+            if (isHidden) {
+                sidebar.classList.remove('w-0', 'overflow-hidden', 'opacity-0', 'border-0');
+                sidebar.classList.add('w-64', 'border-r');
+                btn.classList.remove('text-accent-400', 'bg-accent-500/10');
+                toast('Theater Mode Off');
             } else {
-                panel.classList.add('w-0', 'border-0', 'overflow-hidden');
-                panel.classList.remove('w-80', 'border-l');
-                document.getElementById('btn-theater').classList.add('text-primary-400');
+                sidebar.classList.remove('w-64', 'border-r');
+                sidebar.classList.add('w-0', 'overflow-hidden', 'opacity-0', 'border-0');
+                btn.classList.add('text-accent-400', 'bg-accent-500/10');
+                toast('Theater Mode On');
             }
         }
 
-        function toggleFocus() {
-            document.body.classList.toggle('focus-mode');
-            document.getElementById('btn-focus').classList.toggle('text-primary-400');
-            // Force redraw
-            window.dispatchEvent(new Event('resize'));
+        // Key Shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if(e.target.tagName === 'INPUT') {
+                    if(e.key === 'Escape') {
+                         if(!document.getElementById('cmd-palette-overlay').classList.contains('hidden')) toggleCmdPalette();
+                    }
+                    return;
+                }
+
+                if(e.key === '?' && !e.metaKey && !e.ctrlKey) {
+                    toggleShortcuts();
+                    return;
+                }
+
+                if((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    toggleCmdPalette();
+                    return;
+                }
+                
+                if((e.metaKey || e.ctrlKey) && e.key === '/') {
+                    e.preventDefault();
+                    toggleShortcuts();
+                    return;
+                }
+
+                if(e.key === 'Escape') {
+                    if(document.body.classList.contains('focus-mode')) toggleFocus();
+                    else if(!document.getElementById('shortcuts-overlay').classList.contains('hidden')) toggleShortcuts();
+                    else if(!document.getElementById('view-player').classList.contains('hidden')) renderDashboard();
+                }
+                
+                // Shortcut specific to dashboard view
+                if(document.getElementById('view-player').classList.contains('hidden')) {
+                     if(e.key.toLowerCase() === 'z') { // Allow Maximized mode in dashboard too for immersion
+                         // Optional: could implement focus mode for dashboard
+                     }
+                }
+
+                // Player Shortcuts
+                if(!document.getElementById('view-player').classList.contains('hidden') && player) {
+                    switch(e.key.toLowerCase()) {
+                        case ' ': 
+                            e.preventDefault();
+                            if(player.getPlayerState() === 1) player.pauseVideo();
+                            else player.playVideo();
+                            break;
+                        case 'arrowright':
+                            player.seekTo(player.getCurrentTime() + 5); break;
+                        case 'arrowleft':
+                            player.seekTo(player.getCurrentTime() - 5); break;
+                        case 'f':
+                            const iframe = document.getElementById('yt-player-mount');
+                            if(iframe.requestFullscreen) iframe.requestFullscreen();
+                            break;
+                        case 'm':
+                            if(player.isMuted()) { player.unMute(); toast('Unmuted'); }
+                            else { player.mute(); toast('Muted'); }
+                            break;
+                        case 't': toggleTheater(); break;
+                        case 'z': toggleFocus(); break;
+                        case 'l': toggleLoop(); break;
+                        case '[': setLoopPoint('A'); break;
+                        case ']': setLoopPoint('B'); break;
+                    }
+                }
+            });
+        }
+
+        // Command Palette Logic
+        function toggleCmdPalette() {
+            const overlay = document.getElementById('cmd-palette-overlay');
+            const input = document.getElementById('cmd-input');
+            const modal = document.getElementById('cmd-palette-modal');
+            
+            if(overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    modal.classList.remove('scale-95');
+                }, 10);
+                input.value = '';
+                input.focus();
+                cmdSelectedIndex = 0; // Reset
+                renderCmdResults('');
+            } else {
+                overlay.classList.add('opacity-0');
+                modal.classList.add('scale-95');
+                setTimeout(() => overlay.classList.add('hidden'), 200);
+            }
+        }
+        
+        function toggleShortcuts() {
+            const overlay = document.getElementById('shortcuts-overlay');
+            const modal = overlay.firstElementChild;
+            
+            if(overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    modal.classList.remove('scale-95');
+                }, 10);
+            } else {
+                overlay.classList.add('opacity-0');
+                modal.classList.add('scale-95');
+                setTimeout(() => overlay.classList.add('hidden'), 200);
+            }
+        }
+
+        function renderCmdResults(query) {
+            const container = document.getElementById('cmd-results');
+            container.innerHTML = '';
+            const q = query.toLowerCase();
+            
+            // Reset Data
+            cmdMatches = [];
+
+            // 1. Collect Matches
+            db.folders.forEach(f => {
+                if(f.name.toLowerCase().includes(q)) {
+                    cmdMatches.push({ type: 'folder', data: f });
+                }
+                f.videos.forEach(v => {
+                    if(v.title.toLowerCase().includes(q)) {
+                        cmdMatches.push({ type: 'video', data: v, folder: f });
+                    }
+                });
+            });
+
+            // 2. Render Matches
+            if(cmdMatches.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center text-zinc-500 text-xs">No matching results found.</div>`;
+                return;
+            }
+
+            cmdMatches.forEach((match, idx) => {
+                const el = document.createElement('div');
+                const isSelected = idx === cmdSelectedIndex;
+                
+                // Base Classes
+                el.className = `flex items-center gap-3 p-3 rounded-lg cursor-pointer group transition-all duration-100 ${isSelected ? 'bg-surfaceHighlight ring-1 ring-border' : 'hover:bg-surfaceHighlight/50'}`;
+                el.id = `cmd-item-${idx}`; // For scrolling
+                
+                // Allow mouse hover to update selection index
+                el.onmouseenter = () => {
+                    cmdSelectedIndex = idx;
+                    updateCmdVisuals(false); // Don't scroll on mouse hover
+                };
+
+                el.onclick = () => {
+                    executeCmdAction(match);
+                };
+
+                if(match.type === 'folder') {
+                    const f = match.data;
+                    el.innerHTML = `
+                        <div class="p-1.5 bg-zinc-800 rounded group-hover:bg-accent-500 group-hover:text-white transition-colors"><i data-lucide="folder" class="w-4 h-4"></i></div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-white">${escapeHtml(f.name)}</div>
+                            <div class="text-[10px] text-zinc-500">Folder</div>
+                        </div>
+                        <span class="text-xs text-zinc-600 opacity-0 group-hover:opacity-100">Jump</span>
+                    `;
+                } else {
+                    const v = match.data;
+                    const f = match.folder;
+                    el.innerHTML = `
+                        <div class="p-1.5 bg-zinc-800 rounded group-hover:bg-accent-500 group-hover:text-white transition-colors"><i data-lucide="play-circle" class="w-4 h-4"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium text-white truncate">${escapeHtml(v.title)}</div>
+                            <div class="text-[10px] text-zinc-500 truncate">in ${escapeHtml(f.name)}</div>
+                        </div>
+                    `;
+                }
+                container.appendChild(el);
+            });
+            
+            lucide.createIcons({ root: container });
+        }
+
+        // Helper to update active class without full re-render
+        function updateCmdVisuals(shouldScroll = true) {
+            const container = document.getElementById('cmd-results');
+            Array.from(container.children).forEach((el, idx) => {
+                if(idx === cmdSelectedIndex) {
+                    el.classList.add('bg-surfaceHighlight', 'ring-1', 'ring-border');
+                    el.classList.remove('hover:bg-surfaceHighlight/50');
+                    if(shouldScroll) el.scrollIntoView({ block: 'nearest' });
+                } else {
+                    el.classList.remove('bg-surfaceHighlight', 'ring-1', 'ring-border');
+                    el.classList.add('hover:bg-surfaceHighlight/50');
+                }
+            });
+        }
+
+        function executeCmdAction(match) {
+            if(!match) return;
+            if(match.type === 'folder') {
+                openFolder(match.data.id);
+            } else {
+                openFolder(match.folder.id);
+                loadVideo(match.data.id);
+            }
+            toggleCmdPalette();
+        }
+
+        // --- UTILS ---
+        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+        function toast(msg, type='success') {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const i = document.getElementById('toast-icon');
+            
+            if(type==='error') { 
+                i.setAttribute('data-lucide','alert-circle'); 
+                i.className="w-4 h-4 text-red-400"; 
+            } else { 
+                i.setAttribute('data-lucide','check'); 
+                i.className="w-4 h-4 text-emerald-400"; 
+            }
+            lucide.createIcons({ root: t }); // Scope toast update
+            
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
         // Loop Logic
@@ -629,12 +1406,12 @@
             const t = player.getCurrentTime();
             if(pt === 'A') {
                 loopStart = t;
-                document.getElementById('btn-loop-a').classList.add('text-primary-400', 'bg-primary-500/10');
-                toast(`Start: ${formatTime(t)}`);
+                document.getElementById('btn-loop-a').classList.add('text-accent-400', 'bg-accent-500/10');
+                toast(`Point A Set: ${formatTime(t)}`);
             } else {
                 loopEnd = t;
-                document.getElementById('btn-loop-b').classList.add('text-primary-400', 'bg-primary-500/10');
-                toast(`End: ${formatTime(t)}`);
+                document.getElementById('btn-loop-b').classList.add('text-accent-400', 'bg-accent-500/10');
+                toast(`Point B Set: ${formatTime(t)}`);
             }
             if(loopStart !== null && loopEnd !== null) enableLoop(true);
         }
@@ -642,63 +1419,77 @@
         function toggleLoop() {
             if(isLooping) enableLoop(false);
             else if(loopStart !== null && loopEnd !== null) enableLoop(true);
-            else toast('Set A & B first', 'error');
+            else toast('Set Points A & B first', 'error');
         }
 
         function enableLoop(enabled) {
             isLooping = enabled;
             const btn = document.getElementById('btn-loop-toggle');
             if(enabled) {
-                btn.classList.add('text-primary-400');
+                btn.classList.add('text-accent-400', 'bg-accent-500/10');
                 if(loopInterval) clearInterval(loopInterval);
                 loopInterval = setInterval(() => {
                     if(player && player.getCurrentTime) {
                         const t = player.getCurrentTime();
                         if(t > loopEnd || t < loopStart) player.seekTo(loopStart);
                     }
-                }, 500);
+                }, 200);
                 toast('Loop Active');
             } else {
-                btn.classList.remove('text-primary-400');
+                btn.classList.remove('text-accent-400', 'bg-accent-500/10');
                 clearInterval(loopInterval);
-                toast('Loop Off');
+                toast('Loop Disabled');
             }
         }
-
-        // --- UTILS ---
-        function escapeHtml(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
         function formatTime(s) { return new Date(s * 1000).toISOString().substr(14, 5); }
-        function toast(msg, type='success') {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            const i = document.getElementById('toast-icon');
-            if(type==='error') { i.setAttribute('data-lucide','alert-circle'); i.className="w-4 h-4 text-red-400"; }
-            else { i.setAttribute('data-lucide','check-circle'); i.className="w-4 h-4 text-emerald-400"; }
-            lucide.createIcons();
-            t.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
-        }
 
-        // --- DRAG & DROP & MODALS ---
+        // --- CRUD & MODALS ---
         let dragIdx = null;
+        let dragType = null;
+
         function setupDragDrop() {
             document.addEventListener('dragend', () => {
                 document.getElementById('drag-overlay').classList.add('hidden');
-                renderPlaylist();
+                dragIdx = null;
+                dragType = null;
+                if(activeFolderId) renderPlaylist(); 
+                else renderDashboard();
             });
         }
-        function dragStart(e, idx) {
+
+        function dragStart(e, idx, type) {
+            e.stopPropagation();
+            e.dataTransfer.effectAllowed = 'move';
             dragIdx = idx;
-            document.getElementById('drag-overlay').classList.remove('hidden');
+            dragType = type;
+            
+            if (type === 'video') {
+                document.getElementById('drag-overlay').classList.remove('hidden');
+            }
         }
+
         function dragOver(e) { e.preventDefault(); }
-        function drop(e, targetIdx) {
+
+        function drop(e, targetIdx, type) {
             e.preventDefault();
-            const f = getFolder(activeFolderId);
-            const item = f.videos.splice(dragIdx, 1)[0];
-            f.videos.splice(targetIdx, 0, item);
-            save();
-            renderPlaylist();
+            e.stopPropagation();
+
+            if (dragType !== type || dragIdx === null || dragIdx === targetIdx) return;
+
+            if (type === 'video') {
+                const f = getFolder(activeFolderId);
+                const item = f.videos.splice(dragIdx, 1)[0];
+                f.videos.splice(targetIdx, 0, item);
+                save(); 
+                renderPlaylist();
+            } 
+            else if (type === 'folder') {
+                const item = db.folders.splice(dragIdx, 1)[0];
+                db.folders.splice(targetIdx, 0, item);
+                save();
+                renderSidebar();
+                if (!activeFolderId) renderDashboard();
+            }
         }
 
         function openModal(name) {
@@ -710,7 +1501,9 @@
             if(name === 'video') {
                 document.getElementById('inp-video-tag').value = 'Lecture';
                 updateTagVisuals();
+                document.getElementById('inp-video-url').focus();
             }
+            if(name === 'folder') document.getElementById('inp-folder-name').focus();
             if(name === 'edit-folder') document.getElementById('inp-edit-name').value = getFolder(activeFolderId).name;
         }
 
@@ -722,12 +1515,17 @@
             setTimeout(() => { o.classList.add('hidden'); modals.forEach(m => m.classList.add('hidden')); }, 300);
         }
 
-        // Form Logic
         function createFolder() {
-            const name = document.getElementById('inp-folder-name').value;
-            if(!name) return;
+            const inp = document.getElementById('inp-folder-name');
+            const name = inp.value.trim();
+            if(!name) { toast('Folder name required', 'error'); return; }
+            
             db.folders.push({id: uid(), name: name, videos: []});
-            save(); renderDashboard(); closeModals();
+            save(); 
+            renderDashboard(); 
+            closeModals();
+            inp.value = '';
+            toast('Folder created');
         }
 
         function addVideo() {
@@ -737,17 +1535,20 @@
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const match = url.match(regExp);
             const ytId = (match && match[2].length === 11) ? match[2] : null;
-            if(!ytId) { toast('Invalid URL', 'error'); return; }
+            if(!ytId) { toast('Invalid YouTube URL', 'error'); return; }
 
             const f = getFolder(activeFolderId);
             const vid = uid();
             f.videos.push({ id: vid, ytId: ytId, title: title || `Lecture ${f.videos.length + 1}`, tag: tag, watched: false });
             save(); renderPlaylist(); closeModals();
             if(f.videos.length === 1) loadVideo(vid);
+            
+            document.getElementById('inp-video-url').value = '';
+            document.getElementById('inp-video-title').value = '';
         }
 
         function deleteVideo(id) {
-            if(!confirm('Remove?')) return;
+            if(!confirm('Remove this lecture?')) return;
             const f = getFolder(activeFolderId);
             f.videos = f.videos.filter(v => v.id !== id);
             save();
@@ -763,7 +1564,7 @@
         }
 
         function deleteCurrentFolder() {
-            if(!confirm('Delete Folder?')) return;
+            if(!confirm('Delete this folder and all videos?')) return;
             db.folders = db.folders.filter(f => f.id !== activeFolderId);
             save(); renderDashboard(); closeModals();
         }
@@ -772,7 +1573,7 @@
             const f = getFolder(activeFolderId);
             f.name = document.getElementById('inp-edit-name').value;
             save(); closeModals();
-            if(activeVideoId) document.getElementById('player-meta').innerText = `${f.videos.find(v=>v.id===activeVideoId).tag} • ${f.name}`;
+            if(activeVideoId) document.getElementById('player-folder').innerText = f.name;
         }
 
         function setTag(t) {
@@ -783,7 +1584,7 @@
         function updateTagVisuals() {
             const t = document.getElementById('inp-video-tag').value;
             document.querySelectorAll('.tag-btn').forEach(b => {
-                if(b.dataset.tag === t) b.className = "tag-btn text-xs border rounded-lg py-2 transition-colors border-primary-500/50 bg-primary-500/10 text-primary-400";
+                if(b.dataset.tag === t) b.className = "tag-btn text-xs border rounded-lg py-2 transition-colors border-accent-500/50 bg-accent-500/20 text-accent-400 font-bold";
                 else b.className = "tag-btn text-xs border border-border text-zinc-500 rounded-lg py-2 hover:bg-surfaceHighlight transition-colors";
             });
         }
@@ -793,7 +1594,11 @@
         }
 
         function resumeLast() {
-            if(db.lastPlayed) openFolder(db.lastPlayed.folderId);
+            if(db.lastPlayed) {
+                const f = getFolder(db.lastPlayed.folderId);
+                if(f) openFolder(db.lastPlayed.folderId);
+                else toast('Last viewed course not found', 'error');
+            }
         }
 
         function exportData() {
@@ -811,12 +1616,13 @@
             reader.onload = (e) => {
                 try {
                     const json = JSON.parse(e.target.result);
-                    if(json.folders) { db = json; save(); init(); toast('Data Imported'); }
+                    if(json.folders) { db = json; save(); init(); toast('Database Restored'); }
                 } catch(err) { toast('Import Failed', 'error'); }
             };
             reader.readAsText(file);
         }
 
+        // Boot
         window.onload = init;
     </script>
 </body>
